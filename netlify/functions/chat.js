@@ -81,7 +81,7 @@ exports.handler = async function (event) {
         },
         contents: geminiMessages,
         generationConfig: {
-          maxOutputTokens: 600,
+          maxOutputTokens: 800,
           temperature: 0.7,
         }
       }),
