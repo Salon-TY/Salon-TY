@@ -5511,32 +5511,40 @@ async function checkActiveBooking(email){
   }catch(e){return false;}
 }
 
-// ─── CHATBOT ──────────────────────────────────────────────────────────────────
+// ─── CHATBOT (refonte complète) ──────────────────────────────────────────────
 
 const CHAT_FUNCTION_URL='/.netlify/functions/chat';
 const CHAT_MAX_EXCHANGES=15;
+const CHAT_PHONE='07 53 41 61 15';
 
 const CHAT_CONFLICT_KEYWORDS=[
   'réclamation','remboursement','arnaque','scandale','honte',
-  'plainte','avocat','tribunal','problème grave','jamais revenir',
-  'mécontente','horrible','catastrophe'
+  'plainte','avocat','tribunal','jamais revenir','mécontent','horrible','catastrophe'
 ];
 
-let chatState={open:false,messages:[],waitingReply:false,rgpdShown:false};
+const CHAT_DEFAULT_CHOICES=[
+  {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
+  {label:'💰 Voir les tarifs',value:'Quels sont vos tarifs ?'},
+  {label:'📞 Nous contacter',value:'__contact__'},
+];
 
+let chatState={open:false,messages:[],waiting:false,rgpdShown:false};
+
+// ── Ouverture / fermeture ──────────────────────────────────────────────────
 function chatOpen(){
   chatState.open=true;
   document.getElementById('chat-window').classList.add('open');
   document.getElementById('chat-fab').classList.add('hidden');
   document.getElementById('chat-backdrop').classList.add('open');
   if(!chatState.rgpdShown&&!localStorage.getItem('ty_chat_rgpd')){
-    document.getElementById('chat-rgpd').style.display='block';
+    const r=document.getElementById('chat-rgpd');
+    if(r)r.style.display='block';
     localStorage.setItem('ty_chat_rgpd','1');
     chatState.rgpdShown=true;
   }
   if(chatState.messages.length===0)chatWelcome();
   chatPreheat();
-  setTimeout(()=>document.getElementById('chat-input').focus(),400);
+  setTimeout(()=>{const i=document.getElementById('chat-input');if(i)i.focus();},400);
 }
 
 function chatClose(){
@@ -5548,86 +5556,96 @@ function chatClose(){
 }
 
 function chatRestart(){
-  // Vider la conversation et recommencer
   chatState.messages=[];
-  chatState.waitingReply=false;
-  const messages=document.getElementById('chat-messages');
-  const typing=document.getElementById('chat-typing');
-  // Supprimer toutes les bulles sauf l'indicateur de frappe
-  Array.from(messages.children).forEach(el=>{
-    if(el.id!=='chat-typing')el.remove();
-  });
-  chatSetChoices([]);
+  chatState.waiting=false;
+  const msgs=document.getElementById('chat-messages');
+  Array.from(msgs.children).forEach(el=>{if(el.id!=='chat-typing')el.remove();});
+  const inp=document.getElementById('chat-input');
+  if(inp)inp.value='';
   document.getElementById('chat-send').disabled=true;
-  document.getElementById('chat-input').value='';
   chatWelcome();
 }
 
+// ── Message de bienvenue ────────────────────────────────────────────────────
 function chatWelcome(){
-  chatAddBubble('bot',"Bonjour ! Je suis <strong>Ty</strong>, l'assistante virtuelle du Salon T.Y 💛<br><br>Je peux vous aider à choisir une prestation, répondre à vos questions ou vous guider vers la réservation.<br><br>Que souhaitez-vous faire ?");
-  chatSetChoices([
-    {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
-    {label:'💰 Voir les tarifs',value:'Quels sont vos tarifs ?'},
-    {label:'❓ Poser une question',value:"J'ai une question"},
-    {label:'📞 Contacter le salon',value:'contact'},
-  ]);
+  chatAddBubble('bot',"Bonjour ! Je suis <strong>Ty</strong>, l'assistante du Salon T.Y 💛<br><br>Comment puis-je vous aider ?");
+  chatSetChoices(CHAT_DEFAULT_CHOICES);
 }
 
+// ── Boutons de choix ────────────────────────────────────────────────────────
 function chatSetChoices(choices){
-  const c=document.getElementById('chat-choices');
-  c.innerHTML='';
+  const box=document.getElementById('chat-choices');
+  box.innerHTML='';
+  if(!choices||!choices.length)return;
   choices.forEach(ch=>{
+    if(!ch||!ch.label)return;
     const btn=document.createElement('button');
     btn.className='chat-choice-btn';
     btn.textContent=ch.label;
     btn.onclick=()=>{
-      if(ch.value==='contact'){chatShowContact();}
-      else{chatSetChoices([]);chatSendMessage(ch.value);}
+      if(ch.value==='__contact__'){chatShowContact();return;}
+      chatSetChoices([]);
+      chatSendMessage(ch.value||ch.label);
     };
-    c.appendChild(btn);
+    box.appendChild(btn);
   });
 }
 
 function chatShowContact(){
-  chatAddBubble('bot','📞 <strong>07 53 41 61 15</strong><br>Ou écrivez-nous sur WhatsApp — on vous répond rapidement 😊');
+  chatSetChoices([]);
+  chatAddBubble('bot','📞 <strong>'+CHAT_PHONE+'</strong><br>Appelez-nous ou écrivez sur WhatsApp, on vous répond vite 😊');
   chatSetChoices([{label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'}]);
 }
 
+// ── Saisie ──────────────────────────────────────────────────────────────────
 function chatSend(){
-  const input=document.getElementById('chat-input');
-  const text=input.value.trim();
-  if(!text||chatState.waitingReply)return;
-  input.value='';chatInputResize(input);
-  document.getElementById('chat-send').disabled=true;
-  chatSendMessage(text);
+  const inp=document.getElementById('chat-input');
+  const txt=inp.value.trim();
+  if(!txt||chatState.waiting)return;
+  inp.value='';
+  chatInputResize(inp);
+  chatSendMessage(txt);
 }
 
+function chatInputKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chatSend();}
+}
+
+function chatInputResize(el){
+  el.style.height='auto';
+  el.style.height=Math.min(el.scrollHeight,100)+'px';
+  document.getElementById('chat-send').disabled=!el.value.trim();
+}
+
+// ── Envoi d'un message ──────────────────────────────────────────────────────
 async function chatSendMessage(text){
-  // Intercepter GOTO_RESERVATION avant tout
-  if(text.trim()==='GOTO_RESERVATION'){
+  // Navigation directe vers la réservation
+  if(text==='__reserver__'||text.trim()==='GOTO_RESERVATION'){
     chatClose();
     requestAnimationFrame(()=>go('s-women-cats'));
     return;
   }
+
   chatSetChoices([]);
-  const lower=text.toLowerCase();
-  if(CHAT_CONFLICT_KEYWORDS.some(kw=>lower.includes(kw))){
+
+  // Détection conflit → redirection téléphone
+  const low=text.toLowerCase();
+  if(CHAT_CONFLICT_KEYWORDS.some(k=>low.includes(k))){
     chatAddBubble('user',text);
-    chatAddBubble('bot',"Je comprends votre préoccupation et je préfère vous mettre directement en contact avec le salon 🙏<br><br>📞 <strong>07 53 41 61 15</strong>");
-    // Bug fix #1 : réactiver le bouton après conflit
-    document.getElementById('chat-send').disabled=false;
+    chatAddBubble('bot','Je préfère vous mettre en contact direct avec le salon pour cela 🙏<br><br>📞 <strong>'+CHAT_PHONE+'</strong>');
+    chatSetChoices([{label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'}]);
     return;
   }
+
   chatAddBubble('user',text);
   chatState.messages.push({role:'user',content:text});
-  if(chatState.messages.length>CHAT_MAX_EXCHANGES*2){
-    // Bug fix #2 : réactiver le bouton après limite côté client
-    document.getElementById('chat-send').disabled=false;
-    chatShowLimite();
-    return;
-  }
-  chatState.waitingReply=true;
+
+  if(chatState.messages.length>CHAT_MAX_EXCHANGES*2){chatShowLimite();return;}
+
+  chatState.waiting=true;
+  document.getElementById('chat-send').disabled=true;
   chatShowTyping(true);
+
   try{
     const res=await fetch(CHAT_FUNCTION_URL,{
       method:'POST',
@@ -5635,131 +5653,104 @@ async function chatSendMessage(text){
       body:JSON.stringify({messages:chatState.messages,systemPrompt:chatBuildPrompt()}),
     });
     const data=await res.json();
-    chatShowTyping(false);chatState.waitingReply=false;
+    chatShowTyping(false);
+    chatState.waiting=false;
     document.getElementById('chat-send').disabled=false;
+
     if(data.error==='LIMITE_ATTEINTE'){chatShowLimite();return;}
-    if(data.error){chatAddBubble('bot',data.message||"Une erreur est survenue. Appelez-nous au 07 53 41 61 15.");return;}
-    const reply=data.reply||'';
-    chatState.messages.push({role:'assistant',content:reply});
-    chatParseAndDisplay(reply);
-  }catch(err){
-    chatShowTyping(false);chatState.waitingReply=false;
-    document.getElementById('chat-send').disabled=false;
-    chatAddBubble('bot',"L'assistant est momentanément indisponible. Appelez-nous au 07 53 41 61 15 📞");
-  }
-}
-
-function chatParseAndDisplay(reply){
-  if(reply.trim()==='GOTO_RESERVATION'){chatClose();requestAnimationFrame(()=>go('s-women-cats'));return;}
-
-  // Chercher un objet JSON complet avec accolades équilibrées
-  let jsonObj=null;
-  const start=reply.indexOf('{');
-  if(start!==-1){
-    let depth=0,end=-1,inStr=false,esc=false;
-    for(let i=start;i<reply.length;i++){
-      const c=reply[i];
-      if(esc){esc=false;continue;}
-      if(c==='\\'){esc=true;continue;}
-      if(c==='"')inStr=!inStr;
-      if(inStr)continue;
-      if(c==='{')depth++;
-      else if(c==='}'){depth--;if(depth===0){end=i;break;}}
-    }
-    if(end!==-1){
-      const candidate=reply.slice(start,end+1);
-      try{jsonObj=JSON.parse(candidate);}catch{jsonObj=null;}
-    }
-  }
-
-  // Si JSON valide avec choix → afficher proprement
-  if(jsonObj&&(jsonObj.text||jsonObj.choices)){
-    const txt=jsonObj.text||reply.slice(0,start).trim();
-    if(txt)chatAddBubble('bot',txt);
-    if(jsonObj.choices&&Array.isArray(jsonObj.choices)&&jsonObj.choices.length>0){
-      chatSetChoices(jsonObj.choices);
+    if(data.error){
+      chatAddBubble('bot',data.message||('Désolée, une erreur est survenue. Appelez-nous au '+CHAT_PHONE));
+      chatSetChoices(CHAT_DEFAULT_CHOICES);
       return;
     }
-  } else {
-    // Pas de JSON → nettoyer le texte de tout résidu d'accolades et afficher
-    const clean=reply.replace(/\{[\s\S]*\}/g,'').trim()||reply.trim();
-    chatAddBubble('bot',clean);
+
+    const reply=data.reply||'';
+    chatState.messages.push({role:'assistant',content:reply});
+    chatRender(reply);
+  }catch(err){
+    chatShowTyping(false);
+    chatState.waiting=false;
+    document.getElementById('chat-send').disabled=false;
+    chatAddBubble('bot','L\'assistant est momentanément indisponible. Appelez-nous au '+CHAT_PHONE+' 📞');
+    chatSetChoices(CHAT_DEFAULT_CHOICES);
+  }
+}
+
+// ── Affichage de la réponse (parsing robuste) ───────────────────────────────
+function chatExtractJSON(reply){
+  // Trouve le premier objet JSON avec accolades équilibrées
+  const start=reply.indexOf('{');
+  if(start===-1)return null;
+  let depth=0,inStr=false,esc=false;
+  for(let i=start;i<reply.length;i++){
+    const c=reply[i];
+    if(esc){esc=false;continue;}
+    if(c==='\\'){esc=true;continue;}
+    if(c==='"')inStr=!inStr;
+    if(inStr)continue;
+    if(c==='{')depth++;
+    else if(c==='}'){depth--;if(depth===0){
+      try{return JSON.parse(reply.slice(start,i+1));}catch(e){return null;}
+    }}
+  }
+  return null;
+}
+
+function chatRender(reply){
+  // GOTO direct
+  if(reply.trim()==='GOTO_RESERVATION'){
+    chatClose();requestAnimationFrame(()=>go('s-women-cats'));return;
   }
 
-  // Choix de repli si aucun bouton proposé
-  chatSetChoices([
-    {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
-    {label:'💰 Voir les tarifs',value:'Quels sont vos tarifs ?'},
-    {label:'📞 Nous contacter',value:'contact'},
-  ]);
+  const obj=chatExtractJSON(reply);
+
+  if(obj&&(obj.text||obj.choices)){
+    // Message structuré : texte + boutons
+    if(obj.text)chatAddBubble('bot',obj.text);
+    if(Array.isArray(obj.choices)&&obj.choices.length){
+      // Mapper GOTO_RESERVATION vers la navigation
+      const choices=obj.choices.map(c=>({
+        label:c.label,
+        value:c.value==='GOTO_RESERVATION'?'__reserver__':c.value
+      }));
+      chatSetChoices(choices);
+      return;
+    }
+  }else{
+    // Texte simple : enlever tout résidu JSON éventuel
+    let clean=reply.replace(/\{[\s\S]*\}/g,'').trim();
+    if(!clean)clean=reply.trim();
+    chatAddBubble('bot',clean);
+  }
+  // Toujours proposer des choix de repli
+  chatSetChoices(CHAT_DEFAULT_CHOICES);
 }
 
-function chatBuildPrompt(){
-  const salonName=document.getElementById('home-name')?.textContent||'Salon T.Y';
-  const salonLoc=document.getElementById('home-loc')?.textContent||'Linas, 91310';
-  const salonPhone='07 53 41 61 15';
-  let prestationsText='';
-  try{
-    Object.values(SVCS).forEach(cat=>{
-      prestationsText+=`\n${cat.label} :\n`;
-      cat.items.forEach(item=>{
-        prestationsText+=`  - ${item.name} : ${item.price}€, durée ${item.duration} min\n`;
-      });
-    });
-  }catch{}
-  const ouvertInfo=document.getElementById('home-ouvert-block')?.textContent?.trim()||'';
-  return `Tu es Ty, l'assistante virtuelle du ${salonName}, salon de coiffure afro-caribéenne situé à ${salonLoc}.
-Tu aides les clientes à choisir une prestation et les orientes vers la réservation.
-
-RÈGLES ABSOLUES :
-- Tu réponds UNIQUEMENT sur les sujets coiffure, beauté et réservation du ${salonName}.
-- Si hors sujet : "Je suis spécialisée pour le ${salonName}. Puis-je vous aider pour une réservation ?"
-- Jamais de lien de paiement, mot de passe ou donnée sensible.
-- Conflit ou mécontentement → oriente vers ${salonPhone}.
-- Tu réponds dans la langue de la cliente (français, anglais, arabe...).
-- Chaleureuse, professionnelle, concise. Maximum 3 phrases par réponse. Tu DOIS toujours terminer tes phrases complètement. Ne jamais t'arrêter en milieu de phrase.
-- Quand tu proposes des choix : réponds UNIQUEMENT avec l'objet JSON, RIEN avant, RIEN après. Format exact : {"text":"ton message ici","choices":[{"label":"texte bouton","value":"valeur envoyée"}]}
-- Ne JAMAIS écrire le message en texte puis le répéter dans le JSON. Soit du texte simple seul, soit du JSON seul.
-- Réponse informative sans choix : texte simple uniquement, aucun JSON, aucune accolade.
-
-INFOS SALON :
-Nom : ${salonName} | Adresse : ${salonLoc} | Tél : ${salonPhone}
-Disponibilité : ${ouvertInfo}
-
-PRESTATIONS :${prestationsText||'\n  Inviter à appeler le salon.'}
-
-PRESTATION ENFANT (toujours disponible, ne pas dire qu'elle n'existe pas) :
-  - Coupe enfant : 10€, durée 30 min
-
-ARBRE RÉSERVATION :
-1. Demander : pour qui ? → Femme / Homme / Enfant
-2. Proposer les catégories correspondantes
-3. Proposer les prestations avec prix et durée
-4. Conclure avec : {"text":"Je vous guide vers la réservation 🗓️","choices":[{"label":"📅 Réserver maintenant","value":"GOTO_RESERVATION"}]}
-Si la cliente choisit GOTO_RESERVATION, réponds exactement : GOTO_RESERVATION`;
-}
-
+// ── Carte limite atteinte ───────────────────────────────────────────────────
 function chatShowLimite(){
   chatSetChoices([]);
-  const messages=document.getElementById('chat-messages');
+  chatState.waiting=false;
+  document.getElementById('chat-send').disabled=false;
+  const msgs=document.getElementById('chat-messages');
   const card=document.createElement('div');
   card.className='chat-limit-card';
-  card.innerHTML=`<p>J'ai répondu à beaucoup de vos questions 😊 Pour aller plus loin :</p>
-    <div class="chat-limit-actions">
-      <button class="chat-limit-btn primary" onclick="chatClose();requestAnimationFrame(()=>go('s-women-cats'))">📅 Réserver</button>
-      <button class="chat-limit-btn secondary" onclick="window.location.href='tel:0753416115'">📞 07 53 41 61 15</button>
-    </div>`;
-  messages.insertBefore(card,document.getElementById('chat-typing'));
+  card.innerHTML='<p>J\'ai répondu à beaucoup de questions 😊 Pour continuer :</p>'
+    +'<div class="chat-limit-actions">'
+    +'<button class="chat-limit-btn primary" onclick="chatClose();requestAnimationFrame(()=>go(\'s-women-cats\'))">📅 Réserver</button>'
+    +'<button class="chat-limit-btn secondary" onclick="window.location.href=\'tel:0753416115\'">📞 Appeler</button>'
+    +'</div>';
+  msgs.insertBefore(card,document.getElementById('chat-typing'));
   chatScrollBottom();
 }
 
+// ── Bulles & helpers ────────────────────────────────────────────────────────
 function chatAddBubble(role,html){
-  const messages=document.getElementById('chat-messages');
+  const msgs=document.getElementById('chat-messages');
   const typing=document.getElementById('chat-typing');
-  const bubble=document.createElement('div');
-  bubble.className=`chat-bubble ${role}`;
-  bubble.innerHTML=html;
-  messages.insertBefore(bubble,typing);
+  const b=document.createElement('div');
+  b.className='chat-bubble '+role;
+  b.innerHTML=html;
+  msgs.insertBefore(b,typing);
   chatScrollBottom();
 }
 
@@ -5773,18 +5764,8 @@ function chatScrollBottom(){
   requestAnimationFrame(()=>{el.scrollTop=el.scrollHeight;});
 }
 
-function chatInputKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();chatSend();}
-}
-
-function chatInputResize(el){
-  el.style.height='auto';
-  el.style.height=Math.min(el.scrollHeight,100)+'px';
-  document.getElementById('chat-send').disabled=!el.value.trim();
-}
-
+// ── Pré-chauffe (réveil de la fonction Netlify) ─────────────────────────────
 function chatPreheat(){
-  // Simple ping HTTP sans appeler Gemini — juste réveiller la fonction Netlify
   fetch(CHAT_FUNCTION_URL,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
@@ -5792,6 +5773,49 @@ function chatPreheat(){
   }).catch(()=>{});
 }
 
+// ── Construction du prompt dynamique ────────────────────────────────────────
+function chatBuildPrompt(){
+  const salonName=(document.getElementById('home-name')?.textContent||'Salon T.Y').trim();
+  const salonLoc=(document.getElementById('home-loc')?.textContent||'Linas, 91310').trim();
+  let prestations='';
+  try{
+    Object.values(SVCS).forEach(cat=>{
+      prestations+='\n'+cat.label+' :\n';
+      cat.items.forEach(it=>{prestations+='  - '+it.name+' : '+it.price+'€, '+it.duration+' min\n';});
+    });
+  }catch(e){}
+  const ouvert=(document.getElementById('home-ouvert-block')?.textContent||'').trim();
+
+  return `Tu es Ty, l'assistante virtuelle du ${salonName}, salon de coiffure afro-caribéenne à ${salonLoc}.
+Tu aides les clientes à choisir une prestation et à réserver.
+
+RÈGLES STRICTES :
+- Réponds UNIQUEMENT sur la coiffure, la beauté et la réservation du ${salonName}.
+- Hors sujet → "Je suis spécialisée pour le ${salonName}. Puis-je vous aider pour une réservation ?"
+- Jamais de paiement, mot de passe ou donnée sensible.
+- Mécontentement/conflit → oriente vers le téléphone ${CHAT_PHONE}.
+- Réponds dans la langue de la cliente.
+- Chaleureuse, concise : maximum 2 phrases. Termine toujours tes phrases.
+
+FORMAT DE RÉPONSE (TRÈS IMPORTANT) :
+- Si tu proposes des choix à la cliente : réponds UNIQUEMENT avec un objet JSON, sans aucun texte avant ni après.
+  Exemple EXACT : {"text":"Pour qui est la prestation ?","choices":[{"label":"👩 Femme","value":"Femme"},{"label":"👨 Homme","value":"Homme"},{"label":"🧒 Enfant","value":"Enfant"}]}
+- Si tu donnes juste une information sans choix : réponds en texte simple, SANS accolades, SANS JSON.
+- Ne mélange JAMAIS texte libre et JSON dans la même réponse.
+
+PRESTATIONS :${prestations||'\n  (appeler le salon)'}
+PRESTATION ENFANT (toujours dispo) : Coupe enfant 10€, 30 min.
+
+DISPONIBILITÉ : ${ouvert}
+
+PARCOURS RÉSERVATION :
+1. Demander pour qui (Femme/Homme/Enfant) via JSON choices.
+2. Proposer les catégories puis les prestations avec prix/durée via JSON choices.
+3. Pour finir, propose un bouton de réservation :
+   {"text":"Parfait ! Je vous guide vers la réservation 🗓️","choices":[{"label":"📅 Réserver maintenant","value":"GOTO_RESERVATION"}]}`;
+}
+
+// ── Sauvegarde résumé (cliente connectée uniquement) ────────────────────────
 async function chatSaveSummary(){
   if(!window._clientEmail||chatState.messages.length<4)return;
   try{
@@ -5800,7 +5824,7 @@ async function chatSaveSummary(){
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         messages:[...chatState.messages,{role:'user',content:'Résume en 1 phrase courte : prestation envisagée, contraintes, décision. Max 150 caractères.'}],
-        systemPrompt:'Tu résumes en 1 phrase courte et factuelle.',
+        systemPrompt:'Tu résumes en une phrase courte et factuelle.',
       }),
     });
     const data=await res.json();
@@ -5810,7 +5834,7 @@ async function chatSaveSummary(){
       summary:data.reply.slice(0,150),
       created_at:new Date().toISOString(),
     });
-  }catch{}
+  }catch(e){}
 }
 </script>
 <!-- ─── CHATBOT ───────────────────────────────────────────────────────────── -->
