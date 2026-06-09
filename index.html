@@ -5524,11 +5524,11 @@ const CHAT_CONFLICT_KEYWORDS=[
 
 const CHAT_DEFAULT_CHOICES=[
   {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
-  {label:'💰 Voir les tarifs',value:'Quels sont vos tarifs ?'},
+  {label:'💰 Voir les tarifs',value:'__tarifs__'},
   {label:'📞 Nous contacter',value:'__contact__'},
 ];
 
-let chatState={open:false,messages:[],waiting:false,rgpdShown:false};
+let chatState={open:false,messages:[],waiting:false,rgpdShown:false,lastCategory:''};
 
 // ── Ouverture / fermeture ──────────────────────────────────────────────────
 function chatOpen(){
@@ -5552,12 +5552,12 @@ function chatClose(){
   document.getElementById('chat-window').classList.remove('open');
   document.getElementById('chat-fab').classList.remove('hidden');
   document.getElementById('chat-backdrop').classList.remove('open');
-  chatSaveSummary();
 }
 
 function chatRestart(){
   chatState.messages=[];
   chatState.waiting=false;
+  chatState.lastCategory='';
   const msgs=document.getElementById('chat-messages');
   Array.from(msgs.children).forEach(el=>{if(el.id!=='chat-typing')el.remove();});
   const inp=document.getElementById('chat-input');
@@ -5584,11 +5584,43 @@ function chatSetChoices(choices){
     btn.textContent=ch.label;
     btn.onclick=()=>{
       if(ch.value==='__contact__'){chatShowContact();return;}
+      if(ch.value==='__tarifs__'){chatShowTarifs();return;}
+      if(ch.value==='__restart__'){chatRestart();return;}
       chatSetChoices([]);
       chatSendMessage(ch.value||ch.label);
     };
     box.appendChild(btn);
   });
+  // Bouton "Recommencer" pendant le parcours (dès qu'il y a eu des échanges)
+  const hasRestart=choices.some(c=>c.value==='__restart__');
+  if(chatState.messages.length>1&&!hasRestart){
+    const r=document.createElement('button');
+    r.className='chat-choice-btn';
+    r.style.opacity='0.7';
+    r.textContent='↩️ Recommencer';
+    r.onclick=()=>chatRestart();
+    box.appendChild(r);
+  }
+}
+
+function chatShowTarifs(){
+  chatSetChoices([]);
+  // Construire la liste des tarifs depuis les prestations de l'app
+  let html='Voici nos tarifs principaux 💛<br>';
+  try{
+    Object.values(SVCS).forEach(cat=>{
+      html+='<br><strong>'+cat.label+'</strong><br>';
+      cat.items.slice(0,4).forEach(it=>{
+        html+='• '+it.name+' — <strong>'+it.price+'€</strong> ('+it.duration+' min)<br>';
+      });
+    });
+  }catch(e){}
+  html+='<br>🧒 Coupe enfant — <strong>10€</strong> (30 min)';
+  chatAddBubble('bot',html);
+  chatSetChoices([
+    {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
+    {label:'📞 Nous contacter',value:'__contact__'},
+  ]);
 }
 
 function chatShowContact(){
@@ -5617,14 +5649,41 @@ function chatInputResize(el){
   document.getElementById('chat-send').disabled=!el.value.trim();
 }
 
+// ── Navigation vers la réservation selon la catégorie ───────────────────────
+function chatGoReserve(cat){
+  chatClose();
+  const c=(cat||'').toLowerCase();
+  requestAnimationFrame(()=>{
+    if(c.includes('homme')||c.includes('men')){
+      // Prestations homme
+      if(typeof loadSvcs==='function'){loadSvcs('men');go('s-services');}
+      else go('s-women-cats');
+    } else if(c.includes('enfant')||c.includes('child')){
+      // Coupe enfant directement
+      if(typeof pickSvc==='function'){
+        pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null});
+      } else go('s-women-cats');
+    } else {
+      // Femme par défaut
+      go('s-women-cats');
+    }
+  });
+}
+
 // ── Envoi d'un message ──────────────────────────────────────────────────────
 async function chatSendMessage(text){
-  // Navigation directe vers la réservation
-  if(text==='__reserver__'||text.trim()==='GOTO_RESERVATION'){
-    chatClose();
-    requestAnimationFrame(()=>go('s-women-cats'));
+  // Navigation directe vers la réservation (avec catégorie éventuelle)
+  if(text.indexOf('__reserver__')===0||text.trim().indexOf('GOTO_RESERVATION')===0){
+    const cat=chatState.lastCategory||text.replace('__reserver__','').replace('GOTO_RESERVATION','').replace(/[:_]/g,' ');
+    chatGoReserve(cat);
     return;
   }
+
+  // Mémoriser la catégorie mentionnée pour la redirection finale
+  const lowCat=text.toLowerCase();
+  if(lowCat==='homme'||lowCat.includes('pour homme')||lowCat==='men')chatState.lastCategory='homme';
+  else if(lowCat==='enfant'||lowCat.includes('pour enfant'))chatState.lastCategory='enfant';
+  else if(lowCat==='femme'||lowCat.includes('pour femme'))chatState.lastCategory='femme';
 
   chatSetChoices([]);
 
@@ -5697,9 +5756,10 @@ function chatExtractJSON(reply){
 }
 
 function chatRender(reply){
-  // GOTO direct
-  if(reply.trim()==='GOTO_RESERVATION'){
-    chatClose();requestAnimationFrame(()=>go('s-women-cats'));return;
+  // GOTO direct (avec catégorie éventuelle : GOTO_RESERVATION:Homme)
+  if(reply.trim().indexOf('GOTO_RESERVATION')===0){
+    const cat=chatState.lastCategory||reply.trim().replace('GOTO_RESERVATION','').replace(/[:_]/g,' ');
+    chatGoReserve(cat);return;
   }
 
   const obj=chatExtractJSON(reply);
@@ -5708,10 +5768,10 @@ function chatRender(reply){
     // Message structuré : texte + boutons
     if(obj.text)chatAddBubble('bot',obj.text);
     if(Array.isArray(obj.choices)&&obj.choices.length){
-      // Mapper GOTO_RESERVATION vers la navigation
+      // Mapper GOTO_RESERVATION vers la navigation (en gardant la catégorie)
       const choices=obj.choices.map(c=>({
         label:c.label,
-        value:c.value==='GOTO_RESERVATION'?'__reserver__':c.value
+        value:(c.value&&c.value.indexOf('GOTO_RESERVATION')===0)?('__reserver__'+(c.value.replace('GOTO_RESERVATION',''))):c.value
       }));
       chatSetChoices(choices);
       return;
@@ -5796,6 +5856,8 @@ RÈGLES STRICTES :
 - Mécontentement/conflit → oriente vers le téléphone ${CHAT_PHONE}.
 - Réponds dans la langue de la cliente.
 - Chaleureuse, concise : maximum 2 phrases. Termine toujours tes phrases.
+- MÉMOIRE : lis tout l'historique avant de répondre. Ne redemande JAMAIS une information déjà donnée (la catégorie, la prestation, le budget...). Si la cliente a déjà dit "homme", ne redemande pas pour qui c'est.
+- Fais avancer la conversation à chaque message : ne tourne pas en rond, propose l'étape suivante.
 
 FORMAT DE RÉPONSE (TRÈS IMPORTANT) :
 - Si tu proposes des choix à la cliente : réponds UNIQUEMENT avec un objet JSON, sans aucun texte avant ni après.
@@ -5811,31 +5873,17 @@ DISPONIBILITÉ : ${ouvert}
 PARCOURS RÉSERVATION :
 1. Demander pour qui (Femme/Homme/Enfant) via JSON choices.
 2. Proposer les catégories puis les prestations avec prix/durée via JSON choices.
-3. Pour finir, propose un bouton de réservation :
-   {"text":"Parfait ! Je vous guide vers la réservation 🗓️","choices":[{"label":"📅 Réserver maintenant","value":"GOTO_RESERVATION"}]}`;
+3. RÉCAPITULE toujours avant de conclure : "Donc [prestation] pour [catégorie], c'est bien ça ?" avec un bouton de confirmation.
+4. Après confirmation, propose le bouton de réservation en indiquant la catégorie dans le value :
+   - Pour une femme : value = "GOTO_RESERVATION:Femme"
+   - Pour un homme : value = "GOTO_RESERVATION:Homme"
+   - Pour un enfant : value = "GOTO_RESERVATION:Enfant"
+   Exemple : {"text":"Parfait ! Je vous guide vers la réservation 🗓️","choices":[{"label":"📅 Réserver maintenant","value":"GOTO_RESERVATION:Homme"}]}
+
+RACCOURCI INTELLIGENT : si dès le départ la cliente nomme une prestation précise (ex "je veux des box braids", "un tissage pour homme"), NE refais PAS tout le parcours. Identifie directement la catégorie (Femme/Homme/Enfant selon le contexte), confirme brièvement, et propose le bouton de réservation. Ne demande "pour qui ?" que si c'est réellement ambigu.`;
 }
 
-// ── Sauvegarde résumé (cliente connectée uniquement) ────────────────────────
-async function chatSaveSummary(){
-  if(!window._clientEmail||chatState.messages.length<4)return;
-  try{
-    const res=await fetch(CHAT_FUNCTION_URL,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        messages:[...chatState.messages,{role:'user',content:'Résume en 1 phrase courte : prestation envisagée, contraintes, décision. Max 150 caractères.'}],
-        systemPrompt:'Tu résumes en une phrase courte et factuelle.',
-      }),
-    });
-    const data=await res.json();
-    if(!data.reply)return;
-    await sbInsert('chat_summaries',{
-      client_email:window._clientEmail,
-      summary:data.reply.slice(0,150),
-      created_at:new Date().toISOString(),
-    });
-  }catch(e){}
-}
+// ── Sauvegarde résumé : retirée (table chat_summaries non créée) ────────────
 </script>
 <!-- ─── CHATBOT ───────────────────────────────────────────────────────────── -->
 
