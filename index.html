@@ -532,20 +532,20 @@ button{touch-action:manipulation;}
       <span id="home-ouvert-heure" style="font-size:10px;color:var(--muted)"></span>
     </div>
     <p class="home-choose">Choisissez votre prestation</p>
-    <div class="home-cards">
-      <button class="home-card" onclick="go('s-women-cats')">
+    <div id="home-cards-wrapper" class="home-cards">
+      <button id="home-btn-femme" class="home-card" onclick="go('s-women-cats')">
         <img class="home-card-img" src="images/img_03.jpg" alt="Femme"/>
-        <div class="home-card-body"><span class="home-card-name">Femme</span><span class="home-card-price">à partir de 25€</span></div>
+        <div class="home-card-body"><span class="home-card-name">Femme</span><span id="home-prix-femme" class="home-card-price">à partir de 25€</span></div>
       </button>
-      <button class="home-card" onclick="loadSvcs('men');go('s-services')">
+      <button id="home-btn-homme" class="home-card" onclick="loadSvcs('men');go('s-services')">
         <img class="home-card-img" src="images/img_04.jpg" alt="Homme"/>
-        <div class="home-card-body"><span class="home-card-name">Homme</span><span class="home-card-price">à partir de 5€</span></div>
+        <div class="home-card-body"><span class="home-card-name">Homme</span><span id="home-prix-homme" class="home-card-price">à partir de 5€</span></div>
       </button>
     </div>
-    <button class="home-enfant" onclick="pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null})">
+    <button class="home-enfant" id="home-btn-enfant" onclick="pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null})">
       <img src="images/img_05.jpg" alt="Enfant"/>
-      <div class="home-enfant-info"><span class="home-enfant-name">Enfant</span><span class="home-enfant-sub">Coupe enfant</span></div>
-      <span class="home-enfant-price">10€</span>
+      <div class="home-enfant-info"><span class="home-enfant-name">Enfant</span><span id="home-enfant-sub" class="home-enfant-sub">Coupe enfant</span></div>
+      <span id="home-enfant-price" class="home-enfant-price">10€</span>
     </button>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button id="client-access" onclick="clientAccessBtn()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:1px solid var(--border);background:#fff;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:inherit">
@@ -580,16 +580,16 @@ button{touch-action:manipulation;}
   </div>
   <div class="cat-grid">
     <button class="cat-card" onclick="loadSvcs('braids');go('s-services')">
-      <img class="cat-img" src="images/img_06.jpg" alt="Tresses"/><div class="cat-body"><span class="cat-name">Tresses &amp; Braids</span><span class="cat-count">6 coiffures</span></div>
+      <img class="cat-img" src="images/img_06.jpg" alt="Tresses"/><div class="cat-body"><span class="cat-name">Tresses &amp; Braids</span><span id="count-braids" class="cat-count">6 coiffures</span></div>
     </button>
     <button class="cat-card" onclick="loadSvcs('weave');go('s-services')">
-      <img class="cat-img" src="images/img_07.jpg" alt="Tissage"/><div class="cat-body"><span class="cat-name">Tissage</span><span class="cat-count">5 coiffures</span></div>
+      <img class="cat-img" src="images/img_07.jpg" alt="Tissage"/><div class="cat-body"><span class="cat-name">Tissage</span><span id="count-weave" class="cat-count">5 coiffures</span></div>
     </button>
     <button class="cat-card" onclick="loadSvcs('chignon');go('s-services')">
-      <img class="cat-img" src="images/img_08.jpg" alt="Chignon"/><div class="cat-body"><span class="cat-name">Chignon</span><span class="cat-count">3 coiffures</span></div>
+      <img class="cat-img" src="images/img_08.jpg" alt="Chignon"/><div class="cat-body"><span class="cat-name">Chignon</span><span id="count-chignon" class="cat-count">3 coiffures</span></div>
     </button>
     <button class="cat-card" onclick="loadSvcs('packages');go('s-services')">
-      <img class="cat-img" src="images/img_09.jpg" alt="Forfaits"/><div class="cat-body"><span class="cat-name">Forfaits</span><span class="cat-count">3 formules</span></div>
+      <img class="cat-img" src="images/img_09.jpg" alt="Forfaits"/><div class="cat-body"><span class="cat-name">Forfaits</span><span id="count-packages" class="cat-count">3 formules</span></div>
     </button>
     <button class="cat-card cat-cust" onclick="go('s-custom')">
       <img class="cat-img" src="images/img_10.jpg" alt="Sur mesure" style="object-position:top"/><div class="cat-body"><span class="cat-name">Sur mesure</span><span class="cat-count cat-count-gold">Demande perso.</span></div>
@@ -1104,6 +1104,36 @@ button{touch-action:manipulation;}
               <option value="150">2h30</option><option value="180">3h</option><option value="240">4h</option><option value="300">5h</option>
             </select>
           </div>
+          <div class="field-group"><label class="field-label">Image (optionnel)</label>
+            <select class="field-input" id="presta-img">
+              <option value="">— Aucune image (icône emoji) —</option>
+              <option value="images/img_06.jpg">Tresses (img_06)</option>
+              <option value="images/img_07.jpg">Tissage (img_07)</option>
+              <option value="images/img_08.jpg">Chignon (img_08)</option>
+              <option value="images/img_09.jpg">Forfaits (img_09)</option>
+              <option value="images/img_13.jpg">Vanille (img_13)</option>
+              <option value="images/img_14.jpg">Knotless (img_14)</option>
+              <option value="images/img_15.jpg">Fulani (img_15)</option>
+              <option value="images/img_16.jpg">Boho (img_16)</option>
+              <option value="images/img_17.jpg">Island Twist (img_17)</option>
+              <option value="images/img_18.jpg">Piqué lâché (img_18)</option>
+              <option value="images/img_19.jpg">Tissage fermé (img_19)</option>
+              <option value="images/img_20.jpg">Tissage ouvert (img_20)</option>
+              <option value="images/img_21.jpg">Tissage closure (img_21)</option>
+              <option value="images/img_22.jpg">Tissage frontal (img_22)</option>
+              <option value="images/img_23.jpg">Tissage lace (img_23)</option>
+              <option value="images/img_24.jpg">Chignon simple (img_24)</option>
+              <option value="images/img_25.jpg">Chignon travaillé (img_25)</option>
+              <option value="images/img_26.jpg">Chignon mariée (img_26)</option>
+              <option value="images/img_27.jpg">Shampoing+Brushing (img_27)</option>
+              <option value="images/img_28.jpg">Shampoing+Brushing+Coupe (img_28)</option>
+              <option value="images/img_29.jpg">Brushing+Coupe (img_29)</option>
+              <option value="images/img_30.jpg">Contours (img_30)</option>
+              <option value="images/img_31.jpg">Barbe (img_31)</option>
+              <option value="images/img_32.jpg">Vanille Homme (img_32)</option>
+              <option value="images/img_33.jpg">Nattes collées (img_33)</option>
+            </select>
+          </div>
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:#fff;border-radius:12px;border:1px solid var(--border)">
             <input type="checkbox" id="presta-actif" checked style="accent-color:var(--gold);width:18px;height:18px;flex-shrink:0"/>
             <label for="presta-actif" style="font-size:12px;color:var(--dark);cursor:pointer">Prestation active (visible aux clients)</label>
@@ -1191,11 +1221,49 @@ Pour toute question, appelez-nous au {tel}.
       <!-- ── ÉQUIPE / PRATICIENS ────────────────────────────────────── -->
       <div id="paramtab-content-praticiens" style="display:none">
         <p style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Équipe</p>
-        <div style="display:flex;gap:8px;margin-bottom:14px">
-          <input class="field-input" id="new-praticien-nom" type="text" placeholder="Prénom Nom" style="flex:1;margin:0"/>
-          <button onclick="addPraticien()" style="background:var(--dark);color:#fff;border-radius:10px;padding:0 14px;font-size:11px;flex-shrink:0;font-family:inherit">Ajouter</button>
-        </div>
+
+        <!-- Liste des praticiens -->
         <div id="praticiens-list"></div>
+
+        <!-- Formulaire ajout/modification -->
+        <div id="praticien-form" style="display:none;background:#f9f6f3;border-radius:16px;padding:16px;margin-top:14px;border:1px solid var(--border)">
+          <p id="praticien-form-title" style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Nouveau membre</p>
+          <input type="hidden" id="praticien-edit-id" value=""/>
+          <div style="display:flex;gap:8px">
+            <div class="field-group" style="flex:1"><label class="field-label">Prénom *</label>
+              <input class="field-input" id="praticien-prenom" type="text" placeholder="Ex: Sarah"/>
+            </div>
+            <div class="field-group" style="flex:1"><label class="field-label">Nom</label>
+              <input class="field-input" id="praticien-nom" type="text" placeholder="Ex: Dupont"/>
+            </div>
+          </div>
+          <div class="field-group"><label class="field-label">Spécialités — prestations gérées</label>
+            <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border-radius:12px;border:1px solid var(--border)">
+              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="spec-femme" style="accent-color:var(--gold);width:16px;height:16px"/>
+                <span>💆 Femme — toutes prestations</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="spec-homme" style="accent-color:var(--gold);width:16px;height:16px"/>
+                <span>✂️ Homme</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+                <input type="checkbox" id="spec-enfant" style="accent-color:var(--gold);width:16px;height:16px"/>
+                <span>🧒 Enfant</span>
+              </label>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:12px;background:#fff;border-radius:12px;border:1px solid var(--border)">
+            <input type="checkbox" id="praticien-actif" checked style="accent-color:var(--gold);width:18px;height:18px;flex-shrink:0"/>
+            <label for="praticien-actif" style="font-size:12px;color:var(--dark);cursor:pointer">Membre actif (apparaît dans les plannings)</label>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="savePraticien()" class="cta-btn" style="flex:1;margin:0">💾 Sauvegarder</button>
+            <button onclick="cancelPraticienForm()" style="padding:0 16px;background:#f0ebe5;color:var(--dark);border-radius:14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:inherit;flex-shrink:0">Annuler</button>
+          </div>
+        </div>
+
+        <button onclick="openAddPraticien()" style="width:100%;margin-top:14px;padding:12px;background:#f0ebe5;color:var(--dark);border-radius:14px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-family:inherit">+ Ajouter un membre</button>
       </div>
 
       <!-- Déconnexion admin -->
@@ -1709,11 +1777,11 @@ async function loadCalendar(){
     // RDV du jour
     dayRdvs.forEach(function(r){
       const card=document.createElement('div');
-      // Couleur selon praticien
-      var isBarber=r.praticien_id===_praticienBarber;
-      var borderCol=isBarber?'#6B1A2A':'#C9A96E';
+      // Couleur et label selon le praticien (dynamique)
+      var praticienInfo=_praticiensCached.find(p=>p.id===r.praticien_id);
+      var borderCol=praticienInfo?(praticienInfo.couleur||'#C9A96E'):'#C9A96E';
       card.style.cssText='background:#fff;border-radius:8px;padding:8px 10px;margin-bottom:6px;border-left:3px solid '+borderCol+';cursor:pointer';
-      var praticienLabel=isBarber?'✂️ Barber 1':'💆 Coiffeuse 1';
+      var praticienLabel=praticienInfo?(praticienInfo.prenom||'Équipe'):'Équipe';
       card.innerHTML='<p style="font-size:12px;color:var(--dark);font-weight:500">'+(r.heure_rdv?r.heure_rdv.substring(0,5):'')+' – '+(r.client_nom||'—')+'</p>'
         +'<p style="font-size:10px;color:var(--muted)">'+(r.service||'—').substring(0,22)+' · '+praticienLabel+'</p>';
       card.onclick=function(){openRdvDetail(r.id);};
@@ -1864,29 +1932,50 @@ async function supprimerRdv(){
 }
 
 // ─── PRATICIENS & SERVICES ───────────────────────────────────────────────────
-// Services du Barber 1
-const BARBER_SERVICES=['Contours','Barbe','Coupe enfant'];
 
-// Praticien IDs (chargés depuis Supabase au démarrage)
-let _praticienCoiffeuse=null;
-let _praticienBarber=null;
+// Cache des praticiens actifs avec leurs spécialités (chargé depuis Supabase)
+let _praticiensCached=[];
 
 async function loadPraticiensIds(){
   try{
-    const praticiens=await sbSelect('praticiens','actif=eq.true','select=id,prenom,nom');
+    const praticiens=await sbSelect('praticiens','actif=eq.true','select=id,prenom,nom,specialites,couleur');
     if(!praticiens)return;
-    praticiens.forEach(p=>{
-      const full=(p.prenom+' '+p.nom).toLowerCase();
-      if(full.includes('barber'))_praticienBarber=p.id;
-      else if(full.includes('coiffeuse'))_praticienCoiffeuse=p.id;
-    });
-  }catch(e){}
+    _praticiensCached=praticiens;
+  }catch(e){console.error('loadPraticiensIds:',e);}
 }
 
-function getPraticienForService(serviceName){
-  const name=typeof serviceName==='object'?(serviceName.name||''):String(serviceName||'');
-  if(BARBER_SERVICES.some(s=>name.includes(s)))return _praticienBarber;
-  return _praticienCoiffeuse;
+// Retourne le(s) praticien(s) qui gèrent une prestation donnée
+// Basé sur la catégorie de la prestation (femme / homme / enfant)
+function getPraticienForService(service){
+  if(!service||!_praticiensCached.length)return null;
+  // Déterminer la catégorie de la prestation
+  let cat='femme'; // par défaut
+  const nom=typeof service==='object'?(service.name||''):String(service||'');
+  // Chercher dans le localStorage la catégorie de cette prestation
+  try{
+    const toutes=getPrestations();
+    const match=toutes.find(p=>p.nom===nom||p.nom.toLowerCase()===nom.toLowerCase());
+    if(match)cat=match.cat||'femme';
+    else if(service&&typeof service==='object'&&service.cat)cat=service.cat;
+  }catch(e){}
+  // Trouver les praticiens qui gèrent cette catégorie
+  const competents=_praticiensCached.filter(p=>{
+    const specs=Array.isArray(p.specialites)?p.specialites:[];
+    return specs.includes(cat);
+  });
+  // Retourner le premier praticien compétent (ou null si aucun)
+  return competents.length?competents[0].id:null;
+}
+
+// Retourne TOUS les praticiens compétents pour une catégorie
+// (utile si plusieurs praticiens gèrent la même catégorie)
+function getPraticienIdsForCat(cat){
+  return _praticiensCached
+    .filter(p=>{
+      const specs=Array.isArray(p.specialites)?p.specialites:[];
+      return specs.includes(cat);
+    })
+    .map(p=>p.id);
 }
 
 // ─── GESTION SESSION CLIENT ───────────────────────────────────────────────────
@@ -2017,29 +2106,100 @@ function slugSvcs(str){
 }
 
 function rebuildSvcsFromPrestations(){
+  // La vitrine lit désormais directement le localStorage via getPrestations().
+  // Cette fonction met quand même SVCS à jour en mémoire pour compatibilité.
   try{
-    const saved=JSON.parse(localStorage.getItem(LS_PRESTATIONS)||'null');
-    if(!saved||!Array.isArray(saved)||!saved.length)return; // garder SVCS codé en dur
-    const actives=saved.filter(p=>p.actif!==false);
-    if(!actives.length)return;
+    const saved=getPrestations();
+    if(!saved||!saved.length)return;
     const newSvcs={};
-    actives.forEach(function(p){
-      const souscat=(p.souscat||p.nom||'').trim();
-      const rawKey=SOUSCAT_TO_KEY[souscat.toLowerCase()]||slugSvcs(souscat)||'autre';
-      if(!newSvcs[rawKey])newSvcs[rawKey]={label:souscat,items:[]};
-      newSvcs[rawKey].items.push({
+    saved.filter(p=>p.actif!==false).forEach(function(p){
+      const key=p.svcsKey||(p.cat==='homme'?'men':p.cat==='enfant'?'enfant':'autre');
+      if(!newSvcs[key])newSvcs[key]={label:p.souscat||key,items:[]};
+      newSvcs[key].items.push({
         name:p.nom||'—',
         icon:p.icon||'✂️',
+        img:p.img||null,
         price:p.prix||0,
         duration:p.duree||60,
-        hasSize:p.prixType==='apartir',
+        hasSize:p.prixType==='apartir'
       });
     });
     if(Object.keys(newSvcs).length>0)SVCS=newSvcs;
   }catch(e){console.error('rebuildSvcs:',e);}
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initTheme();initSession();initApp();showOnboarding();applyTranslations();requestNotifPermission();loadPraticiensIds();applySalonInfo();rebuildSvcsFromPrestations();});
+document.addEventListener('DOMContentLoaded',()=>{initTheme();initSession();initApp();showOnboarding();applyTranslations();requestNotifPermission();loadPraticiensIds();applySalonInfo();rebuildSvcsFromPrestations();refreshHomeFromPrestations();});
+
+// Mettre à jour dynamiquement la home et les compteurs de catégories depuis les prestations
+function refreshHomeFromPrestations(){
+  try{
+    const toutes=getPrestations();
+    const actives=toutes.filter(p=>p.actif!==false);
+
+    // --- Prix minimum Homme ---
+    const hommes=actives.filter(p=>p.cat==='homme'||p.svcsKey==='men');
+    const elHomme=document.getElementById('home-prix-homme');
+    if(elHomme&&hommes.length){
+      const minH=Math.min(...hommes.map(p=>p.prix));
+      elHomme.textContent='à partir de '+minH+'€';
+    }
+
+    // --- Prix minimum Femme ---
+    const femmes=actives.filter(p=>p.cat==='femme');
+    const elFemme=document.getElementById('home-prix-femme');
+    if(elFemme&&femmes.length){
+      const minF=Math.min(...femmes.map(p=>p.prix));
+      elFemme.textContent='à partir de '+minF+'€';
+    }
+
+    // --- Bouton Enfant : nom + prix dynamiques ---
+    const enfants=actives.filter(p=>p.cat==='enfant'||p.svcsKey==='enfant');
+    if(enfants.length){
+      const enfant=enfants[0];
+      const elSub=document.getElementById('home-enfant-sub');
+      const elPrice=document.getElementById('home-enfant-price');
+      const elBtn=document.getElementById('home-btn-enfant');
+      if(elSub) elSub.textContent=enfant.nom;
+      if(elPrice) elPrice.textContent=enfant.prix+'€';
+      if(elBtn) elBtn.onclick=function(){
+        pickSvc({name:enfant.nom,icon:enfant.icon||'✂️',price:enfant.prix,duration:enfant.duree,hasSize:enfant.prixType==='apartir',img:enfant.img||null});
+      };
+    }
+
+    // --- Compteurs de catégories ---
+    const cats=['braids','weave','chignon','packages'];
+    const labels={braids:'coiffure',weave:'coiffure',chignon:'coiffure',packages:'formule'};
+    cats.forEach(function(key){
+      const el=document.getElementById('count-'+key);
+      if(!el)return;
+      const nb=actives.filter(p=>p.svcsKey===key).length;
+      const mot=labels[key]||'prestation';
+      el.textContent=nb+' '+(nb>1?mot+'s':mot);
+    });
+
+    // --- Visibilité bouton Homme ---
+    const btnHomme=document.getElementById('home-btn-homme');
+    if(btnHomme) btnHomme.style.display=hommes.length?'':'none';
+
+    // --- Visibilité bouton Enfant ---
+    const btnEnfant=document.getElementById('home-btn-enfant');
+    if(btnEnfant) btnEnfant.style.display=enfants.length?'':'none';
+
+    // --- Visibilité bouton Femme ---
+    // Si toutes les sous-catégories femme sont vides, on masque aussi le bouton Femme
+    const btnFemme=document.getElementById('home-btn-femme');
+    if(btnFemme) btnFemme.style.display=femmes.length?'':'none';
+
+    // --- Si Homme ET Femme sont masqués, masquer le wrapper ---
+    const wrapper=document.getElementById('home-cards-wrapper');
+    if(wrapper){
+      const hommeVisible=hommes.length>0;
+      const femmeVisible=femmes.length>0;
+      wrapper.style.display=(hommeVisible||femmeVisible)?'flex':'none';
+    }
+
+  }catch(e){console.error('refreshHome:',e);}
+}
 
 // Appliquer les infos salon sauvegardées à la home au démarrage
 function applySalonInfo(){
@@ -2104,11 +2264,35 @@ async function submitAvis(reservationId,clientNom){
 }
 
 function loadSvcs(cat){
-  const data=SVCS[cat];if(!data)return;
-  document.getElementById('svc-title').textContent=data.label;
+  // Source de vérité unique : localStorage
+  const toutes=getPrestations();
+  // cat peut être une svcsKey ('men','braids'...) OU une cat ('homme','femme','enfant')
+  let items=toutes.filter(p=>p.actif!==false&&p.svcsKey===cat);
+  if(!items.length) items=toutes.filter(p=>p.actif!==false&&p.cat===cat);
+  if(!items.length){
+    // Fallback SVCS pour compatibilité avec anciennes données non migrées
+    const data=SVCS[cat];
+    if(data){
+      document.getElementById('svc-title').textContent=data.label;
+      const c=document.getElementById('svc-list');c.innerHTML='';
+      const h=document.createElement('div');h.className='svc-heading';h.textContent=data.label;c.appendChild(h);
+      data.items.forEach(svc=>{
+        const el=document.createElement('div');el.className='svc-item';
+        const imgHtml=svc.img?`<div class="svc-icon-img"><img src="${svc.img}" alt="${svc.name}"/></div>`:`<div class="svc-icon-emoji">${svc.icon}</div>`;
+        el.innerHTML=`${imgHtml}<div class="svc-info"><span class="svc-name">${svc.name}</span><span class="svc-dur">${svc.hasSize?'Taille au choix · 2h–5h':fmtDur(svc.duration)}</span></div><div class="svc-pw"><span class="svc-price">${svc.price}€</span><span class="${svc.hasSize?'svc-from':'svc-fix'}">${svc.hasSize?'À partir de':'Fixe'}</span></div>`;
+        el.onclick=()=>pickSvc(svc);c.appendChild(el);
+      });
+    }
+    return;
+  }
+  // Trier par ordre si défini
+  items.sort((a,b)=>(a.ordre??999)-(b.ordre??999));
+  const label=items[0].souscat||cat;
+  document.getElementById('svc-title').textContent=label;
   const c=document.getElementById('svc-list');c.innerHTML='';
-  const h=document.createElement('div');h.className='svc-heading';h.textContent=data.label;c.appendChild(h);
-  data.items.forEach(svc=>{
+  const h=document.createElement('div');h.className='svc-heading';h.textContent=label;c.appendChild(h);
+  items.forEach(function(p){
+    const svc={name:p.nom,icon:p.icon||'✂️',img:p.img||null,price:p.prix,duration:p.duree,hasSize:p.prixType==='apartir'};
     const el=document.createElement('div');el.className='svc-item';
     const imgHtml=svc.img?`<div class="svc-icon-img"><img src="${svc.img}" alt="${svc.name}"/></div>`:`<div class="svc-icon-emoji">${svc.icon}</div>`;
     el.innerHTML=`${imgHtml}<div class="svc-info"><span class="svc-name">${svc.name}</span><span class="svc-dur">${svc.hasSize?'Taille au choix · 2h–5h':fmtDur(svc.duration)}</span></div><div class="svc-pw"><span class="svc-price">${svc.price}€</span><span class="${svc.hasSize?'svc-from':'svc-fix'}">${svc.hasSize?'À partir de':'Fixe'}</span></div>`;
@@ -2174,25 +2358,49 @@ async function renderSlots(){
       grid.innerHTML='<div class="empty-state" style="grid-column:span 3">Salon fermé ce jour</div>';return;
     }
 
-    // Filtrer par praticien selon le service
-    // Charger les IDs si pas encore disponibles
-    if(!_praticienCoiffeuse&&!_praticienBarber){
-      await loadPraticiensIds();
-    }
-    const praticienId=getPraticienForService(S.service);
-    let slotsFilter='date_rdv=eq.'+dateISO_rt;
-    // On récupère tous les RDV du jour et on filtre par praticien en JS
-    // pour éviter les problèmes de syntaxe avec les valeurs null
+    // Filtrer par praticien(s) selon la catégorie de la prestation
+    if(!_praticiensCached.length) await loadPraticiensIds();
 
+    // Déterminer la catégorie de la prestation choisie
+    let serviceCat='femme';
+    try{
+      const toutes=getPrestations();
+      const svcNom=typeof S.service==='object'?(S.service.name||''):String(S.service||'');
+      const match=toutes.find(p=>p.nom===svcNom||p.nom.toLowerCase()===svcNom.toLowerCase());
+      if(match)serviceCat=match.cat||'femme';
+    }catch(e){}
+
+    // Trouver tous les praticiens compétents pour cette catégorie
+    const praticienIds=getPraticienIdsForCat(serviceCat);
+
+    // Si aucun praticien n'est configuré pour cette catégorie
+    if(!praticienIds.length){
+      grid.innerHTML='<div class="empty-state" style="grid-column:span 3">Aucun praticien disponible pour cette prestation</div>';return;
+    }
+
+    let slotsFilter='date_rdv=eq.'+dateISO_rt;
     const rawSlots=await sbSelect('reservations',slotsFilter,'select=heure_rdv,duree_minutes,praticien_id,statut');
-    // Filtrer par praticien en JS (évite les problèmes null dans REST API)
-    // Filtrer statut annulé/refusé en JS (évite l'encodage accent dans URL)
     const STATUTS_EXCLUS=['annulé','refusé','annule','refuse'];
     const activeSlots=rawSlots.filter(r=>!STATUTS_EXCLUS.includes(r.statut));
-    const filteredSlots=praticienId
-      ? activeSlots.filter(r=>!r.praticien_id||r.praticien_id===praticienId)
-      : activeSlots;
-    const takenSlots=filteredSlots.map(r=>({heure:r.heure_rdv?r.heure_rdv.substring(0,5):'',dureeMin:r.duree_minutes||60}));
+
+    // Garder uniquement les RDV des praticiens compétents
+    // Si plusieurs praticiens → les créneaux pris d'UN des praticiens bloquent ce praticien
+    // On affiche les créneaux libres sur au moins UN praticien compétent
+    const slotsByPraticien={};
+    praticienIds.forEach(pid=>{
+      const rdvPraticien=activeSlots.filter(r=>r.praticien_id===pid||(!r.praticien_id&&praticienIds.length===1));
+      slotsByPraticien[pid]=rdvPraticien.map(r=>({heure:r.heure_rdv?r.heure_rdv.substring(0,5):'',dureeMin:r.duree_minutes||60}));
+    });
+
+    // Construire les créneaux disponibles : un créneau est libre si AU MOINS un praticien est libre
+    const allBuiltSlots=praticienIds.map(pid=>buildSlots(S.date,S.duration,slotsByPraticien[pid]||[]));
+    // Fusionner : un créneau est dispo si libre chez au moins un praticien
+    const mergedSlots=allBuiltSlots[0].map((slot,i)=>({
+      ...slot,
+      taken:allBuiltSlots.every(praticienSlots=>praticienSlots[i]&&praticienSlots[i].taken)
+    }));
+    // Créneaux pris = ceux bloqués chez tous les praticiens compétents
+    const takenSlots=mergedSlots.filter(s=>s.taken).map(s=>({heure:s.time,dureeMin:S.duration}));
     const slots=buildSlots(S.date,S.duration,takenSlots);
     grid.innerHTML='';
     if(!slots.length){grid.innerHTML='<div class="empty-state" style="grid-column:span 3">Aucun créneau disponible</div>';return;}
@@ -4555,34 +4763,92 @@ async function toggleAvis(id,currentVisible){
 }
 
 // ─── PRATICIENS ───────────────────────────────────────────────────────────────
+
+// Cache en mémoire des praticiens (chargés depuis Supabase)
+let _praticiensList=null;
+const SPEC_LABELS={femme:'💆 Femme',homme:'✂️ Homme',enfant:'🧒 Enfant'};
+
 async function loadPraticiens(){
   const list=document.getElementById('praticiens-list');
   if(!list)return;
   const praticiens=await sbSelect('praticiens','order=prenom.asc','select=*');
+  _praticiensList=praticiens||[];
   list.innerHTML='';
+  if(!praticiens||!praticiens.length){list.innerHTML='<div class="empty-state">Aucun membre dans l'équipe</div>';return;}
   praticiens.forEach(function(p){
+    const specs=Array.isArray(p.specialites)?p.specialites:[];
+    const specText=specs.length?specs.map(s=>SPEC_LABELS[s]||s).join(', '):'Aucune spécialité définie';
     const row=document.createElement('div');
-    row.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)';
-    row.innerHTML='<div style="display:flex;align-items:center;gap:10px">'
-      +'<div style="width:32px;height:32px;border-radius:50%;background:'+p.couleur+';opacity:'+(p.actif?1:0.4)+'"></div>'
-      +'<p style="font-size:14px">'+(p.prenom||'')+' '+(p.nom||'')+'</p></div>'
-      +'<button data-id="'+p.id+'" data-actif="'+p.actif+'" onclick="togglePraticien(this.dataset.id,this.dataset.actif===\'true\')" style="padding:6px 12px;border-radius:8px;font-size:9px;background:'+(p.actif?'#faeced':'#edf7ef')+';color:'+(p.actif?'var(--burg)':'#2d7a3a')+';font-family:inherit">'+(p.actif?'Désactiver':'Activer')+'</button>';
+    row.style.cssText='padding:12px 0;border-bottom:1px solid var(--border)';
+    row.innerHTML=
+      '<div style="display:flex;align-items:center;justify-content:space-between">'      +'<div style="display:flex;align-items:center;gap:10px">'      +'<div style="width:36px;height:36px;border-radius:50%;background:'+(p.couleur||'var(--gold)')+';display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:bold;color:#fff;opacity:'+(p.actif?1:0.4)+'">'      +(p.prenom?p.prenom[0].toUpperCase():'?')      +'</div>'      +'<div>'      +'<p style="font-size:14px;color:var(--dark)">'+(p.prenom||'')+' '+(p.nom||'')+(p.actif?'':'<span style="font-size:9px;color:var(--muted);margin-left:6px">⏸ Inactif</span>')+'</p>'      +'<p style="font-size:10px;color:var(--muted);margin-top:2px">'+specText+'</p>'      +'</div></div>'      +'<div style="display:flex;gap:6px">'      +'<button data-id="'+p.id+'" onclick="openEditPraticien(this.dataset.id)" style="background:#f0ebe5;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--dark)">✏️</button>'      +'<button data-id="'+p.id+'" data-actif="'+p.actif+'" onclick="togglePraticien(this.dataset.id,this.dataset.actif==='true')" style="padding:6px 10px;border-radius:8px;font-size:11px;background:'+(p.actif?'#faeced':'#edf7ef')+';color:'+(p.actif?'var(--burg)':'#2d7a3a')+';font-family:inherit">'+(p.actif?'⏸':'▶')+'</button>'      +'</div></div>';
     list.appendChild(row);
   });
-  if(!praticiens.length)list.innerHTML='<div class="empty-state">Aucun praticien</div>';
 }
-async function addPraticien(){
-  const nom=document.getElementById('new-praticien-nom').value.trim();
-  if(!nom){showToast('⚠️ Entrez un nom');return;}
-  const parts=nom.split(' ');
-  await sbInsert('praticiens',{prenom:parts[0]||nom,nom:parts.slice(1).join(' ')||'',actif:true});
-  document.getElementById('new-praticien-nom').value='';
-  showToast('✅ Praticien ajouté');
-  loadPraticiens();
+
+function openAddPraticien(){
+  document.getElementById('praticien-form-title').textContent='Nouveau membre';
+  document.getElementById('praticien-edit-id').value='';
+  document.getElementById('praticien-prenom').value='';
+  document.getElementById('praticien-nom').value='';
+  document.getElementById('spec-femme').checked=false;
+  document.getElementById('spec-homme').checked=false;
+  document.getElementById('spec-enfant').checked=false;
+  document.getElementById('praticien-actif').checked=true;
+  document.getElementById('praticien-form').style.display='block';
+  document.getElementById('praticien-form').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
+
+function openEditPraticien(id){
+  if(!_praticiensList)return;
+  const p=_praticiensList.find(x=>String(x.id)===String(id));
+  if(!p)return;
+  const specs=Array.isArray(p.specialites)?p.specialites:[];
+  document.getElementById('praticien-form-title').textContent='Modifier le membre';
+  document.getElementById('praticien-edit-id').value=p.id;
+  document.getElementById('praticien-prenom').value=p.prenom||'';
+  document.getElementById('praticien-nom').value=p.nom||'';
+  document.getElementById('spec-femme').checked=specs.includes('femme');
+  document.getElementById('spec-homme').checked=specs.includes('homme');
+  document.getElementById('spec-enfant').checked=specs.includes('enfant');
+  document.getElementById('praticien-actif').checked=!!p.actif;
+  document.getElementById('praticien-form').style.display='block';
+  document.getElementById('praticien-form').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+async function savePraticien(){
+  const prenom=document.getElementById('praticien-prenom').value.trim();
+  if(!prenom){showToast('⚠️ Le prénom est obligatoire');return;}
+  const nom=document.getElementById('praticien-nom').value.trim();
+  const specs=[];
+  if(document.getElementById('spec-femme').checked)specs.push('femme');
+  if(document.getElementById('spec-homme').checked)specs.push('homme');
+  if(document.getElementById('spec-enfant').checked)specs.push('enfant');
+  const actif=document.getElementById('praticien-actif').checked;
+  const editId=document.getElementById('praticien-edit-id').value;
+  const data={prenom,nom,specialites:specs,actif};
+  if(editId){
+    await sbUpdate('praticiens','id=eq.'+editId,data);
+  }else{
+    const colors=['#C9A96E','#8B6F4E','#6B4E3D','#A67C52','#7C5C3E','#B8975A'];
+    const couleur=colors[Math.floor(Math.random()*colors.length)];
+    await sbInsert('praticiens',{...data,couleur});
+  }
+  cancelPraticienForm();
+  await loadPraticiens();
+  await loadPraticiensIds();
+  showToast(editId?'✅ Membre mis à jour':'✅ Membre ajouté');
+}
+
+function cancelPraticienForm(){
+  const form=document.getElementById('praticien-form');
+  if(form)form.style.display='none';
+}
+
 async function togglePraticien(id,currentState){
   await sbUpdate('praticiens','id=eq.'+id,{actif:!currentState});
-  loadPraticiens();
+  await loadPraticiens();
+  await loadPraticiensIds();
 }
 
 // ─── PARAMÈTRES SALON ─────────────────────────────────────────────────────────
@@ -4793,29 +5059,37 @@ const SOUSCAT_DEFAULTS={
 function getPrestations(){
   try{
     const saved=JSON.parse(localStorage.getItem(LS_PRESTATIONS)||'null');
-    if(saved&&Array.isArray(saved))return saved;
+    if(saved&&Array.isArray(saved)&&saved.length)return saved;
   }catch(e){}
-  // Construire depuis SVCS par défaut
+  // Premier lancement : construire depuis SVCS avec des IDs stables et sauvegarder immédiatement
   const list=[];
-  let id=1;
-  const catMap={femme:'femme',homme:'homme',enfant:'enfant'};
-  Object.keys(SVCS).forEach(cat=>{
-    const data=SVCS[cat];
+  const CAT_MAP={
+    braids:'femme',weave:'femme',chignon:'femme',packages:'femme',
+    men:'homme',
+    enfant:'enfant'
+  };
+  Object.keys(SVCS).forEach(function(svcsKey){
+    const data=SVCS[svcsKey];
     if(!data||!data.items)return;
-    data.items.forEach(svc=>{
+    data.items.forEach(function(svc,i){
       list.push({
-        id:'p'+id++,
-        cat:cat,
-        souscat:data.label||cat,
+        id:'p_'+svcsKey+'_'+i,         // ID stable basé sur la clé SVCS
+        cat:CAT_MAP[svcsKey]||'femme',
+        souscat:data.label||svcsKey,
+        svcsKey:svcsKey,               // On retient la clé d'origine pour le lien vitrine
         icon:svc.icon||'✂️',
+        img:svc.img||null,
         nom:svc.name,
         prix:svc.price,
         prixType:svc.hasSize?'apartir':'fixe',
         duree:svc.duration||60,
+        ordre:list.length,
         actif:true
       });
     });
   });
+  // Sauvegarde immédiate → plus jamais de reconstruction à la volée
+  localStorage.setItem(LS_PRESTATIONS,JSON.stringify(list));
   return list;
 }
 
@@ -4859,6 +5133,8 @@ function renderPrestaList(list){
         +'<p style="font-size:9px;color:var(--muted)">'+(p.duree>=60?Math.floor(p.duree/60)+'h'+(p.duree%60?String(p.duree%60).padStart(2,'0'):''):p.duree+' min')+' · '+prixLabel+(p.actif?'':' · ⏸ Inactif')+'</p>'
         +'</div>'
         +'<div style="display:flex;gap:6px;flex-shrink:0">'
+        +'<button data-id="'+p.id+'" onclick="movePrestation(this.dataset.id,-1)" style="background:#f0ebe5;border-radius:8px;padding:6px 8px;font-size:11px;font-family:inherit;color:var(--dark)" title="Monter">▲</button>'
+        +'<button data-id="'+p.id+'" onclick="movePrestation(this.dataset.id,1)" style="background:#f0ebe5;border-radius:8px;padding:6px 8px;font-size:11px;font-family:inherit;color:var(--dark)" title="Descendre">▼</button>'
         +'<button data-id="'+p.id+'" onclick="openEditPrestation(this.dataset.id)" style="background:#f0ebe5;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--dark)">✏️</button>'
         +'<button data-id="'+p.id+'" onclick="deletePrestation(this.dataset.id)" style="background:#faeced;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--burg)">🗑️</button>'
         +'</div>';
@@ -4927,6 +5203,8 @@ function openEditPrestation(id){
     if(!exists){const opt=document.createElement('option');opt.value=p.souscat;opt.textContent=p.souscat;sel.appendChild(opt);}
     sel.value=p.souscat;
   }
+  const imgInput=document.getElementById('presta-img');
+  if(imgInput)imgInput.value=p.img||'';
   const newInput=document.getElementById('presta-souscat-new');
   if(newInput){newInput.style.display='none';newInput.value='';}
   document.getElementById('prestation-form').style.display='block';
@@ -4940,24 +5218,30 @@ function savePrestation(){
   const newSousCat=document.getElementById('presta-souscat-new')?.value.trim();
   const sousCatSel=document.getElementById('presta-souscat')?.value;
   const souscat=newSousCat||sousCatSel||'';
+  const editId=document.getElementById('presta-edit-id').value;
+  const list=getPrestations();
+  const existing=list.find(x=>x.id===editId)||{};
   const p={
-    id:document.getElementById('presta-edit-id').value||'p'+Date.now(),
+    id:editId||'p'+Date.now(),
     cat:document.getElementById('presta-cat')?.value||'femme',
     souscat,
+    svcsKey:existing.svcsKey||null,           // conserver la clé vitrine d'origine
+    img:document.getElementById('presta-img')?.value.trim()||existing.img||null,
     icon:document.getElementById('presta-icon')?.value.trim()||'✂️',
     nom,
     prix,
     prixType:document.getElementById('presta-prix-type')?.value||'fixe',
     duree:parseInt(document.getElementById('presta-duree')?.value||'60'),
+    ordre:existing.ordre??list.length,        // conserver l'ordre existant
     actif:document.getElementById('presta-actif')?.checked!==false
   };
-  const list=getPrestations();
   const idx=list.findIndex(x=>x.id===p.id);
   if(idx>=0)list[idx]=p; else list.push(p);
   savePrestations(list);
   cancelPrestaForm();
   renderPrestaList(list);
   rebuildSvcsFromPrestations();
+  refreshHomeFromPrestations();
   showToast('✅ Prestation sauvegardée');
 }
 
@@ -4967,7 +5251,26 @@ function deletePrestation(id){
   savePrestations(list);
   renderPrestaList(list);
   rebuildSvcsFromPrestations();
+  refreshHomeFromPrestations();
   showToast('🗑️ Prestation supprimée');
+}
+
+function movePrestation(id,direction){
+  const list=getPrestations();
+  // Trier par ordre actuel
+  list.sort((a,b)=>(a.ordre??999)-(b.ordre??999));
+  const idx=list.findIndex(p=>p.id===id);
+  if(idx<0)return;
+  const newIdx=idx+direction;
+  if(newIdx<0||newIdx>=list.length)return;
+  // Échanger les positions
+  const tmp=list[idx];list[idx]=list[newIdx];list[newIdx]=tmp;
+  // Réaffecter les ordres proprement
+  list.forEach((p,i)=>p.ordre=i);
+  savePrestations(list);
+  renderPrestaList(list);
+  rebuildSvcsFromPrestations();
+  refreshHomeFromPrestations();
 }
 
 function cancelPrestaForm(){
@@ -5676,15 +5979,23 @@ function chatGoReserve(cat){
 
 // ── Envoi d'un message ──────────────────────────────────────────────────────
 async function chatSendMessage(text){
+  const t=(text||'').trim();
   // Navigation directe vers la réservation (avec catégorie éventuelle)
-  if(text.indexOf('__reserver__')===0||text.trim().indexOf('GOTO_RESERVATION')===0){
-    const cat=chatState.lastCategory||text.replace('__reserver__','').replace('GOTO_RESERVATION','').replace(/[:_]/g,' ');
+  // Gère : __reserver__, GOTO_RESERVATION, et les valeurs de confirmation confirm_xxx
+  if(t.indexOf('__reserver__')===0||t.indexOf('GOTO_RESERVATION')===0||t.toLowerCase().indexOf('confirm_')===0){
+    let cat=chatState.lastCategory;
+    if(!cat){
+      const m=t.toLowerCase();
+      if(m.includes('homme'))cat='homme';
+      else if(m.includes('enfant'))cat='enfant';
+      else cat='femme';
+    }
     chatGoReserve(cat);
     return;
   }
 
   // Mémoriser la catégorie mentionnée pour la redirection finale
-  const lowCat=text.toLowerCase();
+  const lowCat=t.toLowerCase();
   if(lowCat==='homme'||lowCat.includes('pour homme')||lowCat==='men')chatState.lastCategory='homme';
   else if(lowCat==='enfant'||lowCat.includes('pour enfant'))chatState.lastCategory='enfant';
   else if(lowCat==='femme'||lowCat.includes('pour femme'))chatState.lastCategory='femme';
@@ -5692,7 +6003,7 @@ async function chatSendMessage(text){
   chatSetChoices([]);
 
   // Détection conflit → redirection téléphone
-  const low=text.toLowerCase();
+  const low=t.toLowerCase();
   if(CHAT_CONFLICT_KEYWORDS.some(k=>low.includes(k))){
     chatAddBubble('user',text);
     chatAddBubble('bot','Je préfère vous mettre en contact direct avec le salon pour cela 🙏<br><br>📞 <strong>'+CHAT_PHONE+'</strong>');
@@ -5862,6 +6173,7 @@ RÈGLES STRICTES :
 - Chaleureuse, concise : maximum 2 phrases. Termine toujours tes phrases.
 - MÉMOIRE : lis tout l'historique avant de répondre. Ne redemande JAMAIS une information déjà donnée (la catégorie, la prestation, le budget...). Si la cliente a déjà dit "homme", ne redemande pas pour qui c'est.
 - Fais avancer la conversation à chaque message : ne tourne pas en rond, propose l'étape suivante.
+- CHANGEMENT D'AVIS : si la cliente change de prestation en cours de route (ex : "finalement je veux des vanilles"), accepte le changement sans confusion, mets à jour la prestation et refais un court récap avec le nouveau choix. Ne reste jamais bloquée sur l'ancienne prestation.
 
 FORMAT DE RÉPONSE (TRÈS IMPORTANT) :
 - Si tu proposes des choix à la cliente : réponds UNIQUEMENT avec un objet JSON, sans aucun texte avant ni après.
@@ -5877,14 +6189,13 @@ DISPONIBILITÉ : ${ouvert}
 PARCOURS RÉSERVATION :
 1. Demander pour qui (Femme/Homme/Enfant) via JSON choices.
 2. Proposer les catégories puis les prestations avec prix/durée via JSON choices.
-3. RÉCAPITULE toujours avant de conclure : "Donc [prestation] pour [catégorie], c'est bien ça ?" avec un bouton de confirmation.
-4. Après confirmation, propose le bouton de réservation en indiquant la catégorie dans le value :
-   - Pour une femme : value = "GOTO_RESERVATION:Femme"
-   - Pour un homme : value = "GOTO_RESERVATION:Homme"
-   - Pour un enfant : value = "GOTO_RESERVATION:Enfant"
-   Exemple : {"text":"Parfait ! Je vous guide vers la réservation 🗓️","choices":[{"label":"📅 Réserver maintenant","value":"GOTO_RESERVATION:Homme"}]}
+3. Quand la prestation et la catégorie sont claires, fais un récap avec un bouton de confirmation qui mène DIRECTEMENT à la réservation. Le bouton "Oui, c'est exact" doit avoir comme value "GOTO_RESERVATION:Catégorie".
+   Exemple pour des knotless femme : {"text":"Donc des Knotless pour femme, c'est bien ça ?","choices":[{"label":"✅ Oui, c'est exact","value":"GOTO_RESERVATION:Femme"},{"label":"↩️ Changer","value":"Je veux changer"}]}
+4. N'invente JAMAIS de valeur technique comme "confirm_xxx". Le value d'un bouton de réservation est TOUJOURS "GOTO_RESERVATION:Femme", "GOTO_RESERVATION:Homme" ou "GOTO_RESERVATION:Enfant".
 
-RACCOURCI INTELLIGENT : si dès le départ la cliente nomme une prestation précise (ex "je veux des box braids", "un tissage pour homme"), NE refais PAS tout le parcours. Identifie directement la catégorie (Femme/Homme/Enfant selon le contexte), confirme brièvement, et propose le bouton de réservation. Ne demande "pour qui ?" que si c'est réellement ambigu.`;
+CHANGEMENT D'AVIS : si la cliente change d'avis en cours ("finalement je veux des vanilles", "non plutôt un tissage"), prends en compte le NOUVEAU choix immédiatement, oublie l'ancien, et refais un récap avec la nouvelle prestation. Ne reste jamais bloqué sur l'ancien choix.
+
+RACCOURCI INTELLIGENT : si dès le départ la cliente nomme une prestation précise (ex "je veux des box braids"), NE refais PAS tout le parcours. Identifie la catégorie, fais un court récap de confirmation, et propose le bouton de réservation.`;
 }
 
 // ── Sauvegarde résumé : retirée (table chat_summaries non créée) ────────────
