@@ -743,7 +743,7 @@ button{touch-action:manipulation;}
       </div>
     </div>
     <div class="deposit-box">
-      <div><span class="deposit-lbl">Acompte 30%</span><span class="deposit-amt" id="cf-deposit">—</span></div>
+      <div><span class="deposit-lbl" id="deposit-pct-label">Acompte 30%</span><span class="deposit-amt" id="cf-deposit">—</span></div>
       <div class="deposit-info">Paiement sécurisé<br/>via PayPal</div>
     </div>
     <div style="margin:14px 0;padding:14px;background:#f9f6f3;border-radius:14px;border:1px solid var(--border)">
@@ -1450,7 +1450,7 @@ Pour toute question, appelez-nous au {tel}.
     <div id="fiche-historique"></div>
   </div>
 </div>
-v>
+</div>
 
 <button id="dark-toggle" onclick="toggleDark()" title="Mode sombre" style="position:fixed;top:20px;right:16px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;z-index:200;cursor:pointer;font-size:16px;">🌙</button>
 <!-- PANNEAU PARAMÈTRES -->
@@ -1493,6 +1493,7 @@ const EJS_TEMPLATE_CONFIRM='template_bov94s7';
 const EJS_TEMPLATE_REFUSE='template_cbozfn3';
 const EJS_TEMPLATE_RAPPEL='template_rappel';
 const EJS_PUBLIC_KEY='rjBKW5yt-rhTn5H0D';
+const TAUX_ACOMPTE=0.30; // Taux d'acompte PayPal — modifiez uniquement ici pour changer partout
 
 // ─── HELPER SUPABASE REST API ─────────────────────────────────────────────
 const SBH={
@@ -1515,7 +1516,12 @@ async function sbInsert(table,data){
 async function sbUpdate(table,filters,data){
   const r=await fetch(SB_URL+'/rest/v1/'+table+'?'+filters,{method:'PATCH',headers:SBH,body:JSON.stringify(data)});
   if(!r.ok)throw new Error(await r.text());
-  return r.json();
+  const rows=await r.json();
+  // Avec Prefer:return=representation, un UPDATE réussi renvoie les lignes modifiées.
+  // Un tableau vide = aucune ligne touchée (RLS, droits, ou identifiant introuvable) :
+  // on le traite comme une erreur pour ne pas afficher un faux succès.
+  if(Array.isArray(rows)&&rows.length===0)throw new Error('Aucune ligne modifiée (droits/RLS ou identifiant introuvable)');
+  return rows;
 }
 async function sbDelete(table,filters){
   const r=await fetch(SB_URL+'/rest/v1/'+table+'?'+filters,{method:'DELETE',headers:SBH});
@@ -1604,6 +1610,14 @@ const DAYS_F=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi']
 
 let S={history:[],service:null,size:null,duration:0,date:null,slot:null};
 
+function updateChatFabVisibility(id){
+  const fab=document.getElementById('chat-fab');
+  if(!fab)return;
+  const chatHiddenScreens=['s-admin','s-admin-login','s-admin-client-fiche','s-admin-rdv-detail','s-admin-clients','s-admin-prestations','s-admin-marketing','s-admin-stats'];
+  if(chatHiddenScreens.includes(id)){fab.classList.add('hidden');}
+  else if(typeof chatState==='undefined'||!chatState.open){fab.classList.remove('hidden');}
+}
+
 function go(id){
   const cur=document.querySelector('.screen.active');
   const nxt=document.getElementById(id);
@@ -1618,12 +1632,7 @@ function go(id){
   if(dt2)dt2.style.display=isAdminScreen?'none':'';
 
   // Bouton chatbot : caché sur les écrans admin, visible ailleurs
-  const fab=document.getElementById('chat-fab');
-  if(fab){
-    const chatHiddenScreens=['s-admin','s-admin-login','s-admin-client-fiche','s-admin-rdv-detail','s-admin-clients','s-admin-prestations','s-admin-marketing','s-admin-stats'];
-    if(chatHiddenScreens.includes(id)){fab.classList.add('hidden');}
-    else if(typeof chatState==='undefined'||!chatState.open){fab.classList.remove('hidden');}
-  }
+  updateChatFabVisibility(id);
 
   if(id==='s-client')setTimeout(()=>{
     prefillClientForm();
@@ -1697,6 +1706,7 @@ function back(){
   const cur=document.querySelector('.screen.active');
   const prev=document.getElementById(pid);
   if(!prev)return;
+  updateChatFabVisibility(pid);
   cur.classList.remove('active');
   prev.classList.remove('prev');prev.classList.add('active');prev.scrollTop=0;
 }
@@ -1813,6 +1823,7 @@ function backToHome(){
   home.classList.remove('prev');
   home.classList.add('active');
   home.scrollTop=0;
+  updateChatFabVisibility('s-home');
 }
 
 function backToPlanning(){
@@ -1831,6 +1842,7 @@ function backToPlanning(){
   // Nettoyer l'historique jusqu'à s-admin
   while(S.history.length&&S.history[S.history.length-1]!=='s-admin'){S.history.pop();}
   if(S.history.length&&S.history[S.history.length-1]==='s-admin')S.history.pop();
+  updateChatFabVisibility('s-admin');
   // Recalibrer le layout admin puis afficher le planning
   requestAnimationFrame(()=>{
     const hdr=document.querySelector('#s-admin .screen-header');
@@ -1853,6 +1865,7 @@ function backToClients(){
   admin.scrollTop=0;
   while(S.history.length&&S.history[S.history.length-1]!=='s-admin'){S.history.pop();}
   if(S.history.length&&S.history[S.history.length-1]==='s-admin')S.history.pop();
+  updateChatFabVisibility('s-admin');
   requestAnimationFrame(()=>{
     const hdr=document.querySelector('#s-admin .screen-header');
     const nav=document.querySelector('#s-admin nav');
@@ -1866,70 +1879,8 @@ function backToClients(){
 let _currentRdvId=null;
 let _currentRdv=null;
 
-async function saveRdvNote(){
-  if(!_currentRdvId)return;
-  const note=document.getElementById('rdv-detail-note').value;
-  await sbUpdate('reservations','id=eq.'+_currentRdvId,{notes_admin:note});
-  showToast('✅ Note sauvegardée');
-}
-
-async function saveRdvModif(){
-  if(!_currentRdvId)return;
-  const date=document.getElementById('rdv-edit-date').value;
-  const heure=document.getElementById('rdv-edit-heure').value;
-  const prix=parseFloat(document.getElementById('rdv-edit-prix').value)||0;
-  const duree=parseInt(document.getElementById('rdv-edit-duree').value)||60;
-
-  await sbUpdate('reservations','id=eq.'+_currentRdvId,{
-    date_rdv:date,
-    heure_rdv:heure+':00',
-    prix_total:prix,
-    duree_minutes:duree
-  });
-
-  // Notifier le client si email
-  if(_currentRdv&&_currentRdv.client_email){
-    const dateStr=new Date(date+'T12:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
-    sendEmail(EJS_TEMPLATE_CONFIRM,{
-      to_email:_currentRdv.client_email,
-      to_name:_currentRdv.client_nom||'',
-      message_type:'🔔 Votre RDV a été modifié par le salon.',
-      service:_currentRdv.service||'—',
-      date:dateStr,
-      heure:heure,
-      duree:fmtDur(duree),
-      montant_paye:(_currentRdv.montant_paye||0)+'€',
-      prix_total:prix+'€',
-      salon_tel:'07 53 41 61 15'
-    });
-  }
-
-  showToast('✅ RDV modifié');
-  openRdvDetail(_currentRdvId);
-}
-
-async function supprimerRdv(){
-  if(!_currentRdvId)return;
-  if(!confirm('Supprimer définitivement ce RDV ?'))return;
-
-  // Email au client
-  if(_currentRdv&&_currentRdv.client_email){
-    sendEmail(EJS_TEMPLATE_REFUSE,{
-      to_email:_currentRdv.client_email,
-      to_name:_currentRdv.client_nom||'',
-      service:_currentRdv.service||'—',
-      date:_currentRdv.date_rdv||'—',heure:'',duree:'',
-      montant_paye:'',
-      prix_total:'Votre réservation a été annulée. Contactez-nous pour plus d\'informations.',
-      salon_tel:'07 53 41 61 15'
-    });
-  }
-
-  await sbDelete('reservations','id=eq.'+_currentRdvId);
-  showToast('RDV supprimé');
-  go('s-admin');
-  switchAdminSection('planning');
-}
+// Code mort retiré : saveRdvNote / saveRdvModif / supprimerRdv.
+// Remplacés par saveRdvDetail() (sauvegarde complète) et deleteRdv() (suppression).
 
 // ─── PRATICIENS & SERVICES ───────────────────────────────────────────────────
 
@@ -2128,7 +2079,7 @@ function rebuildSvcsFromPrestations(){
   }catch(e){console.error('rebuildSvcs:',e);}
 }
 
-document.addEventListener('DOMContentLoaded',()=>{initTheme();initSession();initApp();showOnboarding();applyTranslations();requestNotifPermission();loadPraticiensIds();applySalonInfo();rebuildSvcsFromPrestations();refreshHomeFromPrestations();});
+document.addEventListener('DOMContentLoaded',()=>{initTheme();initSession();initApp();showOnboarding();applyTranslations();requestNotifPermission();loadPraticiensIds();applySalonInfo();rebuildSvcsFromPrestations();refreshHomeFromPrestations();const _dl=document.getElementById('deposit-pct-label');if(_dl)_dl.textContent='Acompte '+Math.round(TAUX_ACOMPTE*100)+'%';});
 
 // Mettre à jour dynamiquement la home et les compteurs de catégories depuis les prestations
 function refreshHomeFromPrestations(){
@@ -2478,7 +2429,7 @@ function goToConfirmConnecte(c){
   const svc=S.service;
   if(!svc){showToast('⚠️ Service introuvable');return;}
   const total=svc.price;
-  const deposit=Math.round(total*0.30);
+  const deposit=Math.round(total*TAUX_ACOMPTE);
   const dur=S.duration;
   const d=S.date;
   const name=(c.prenom||'')+' '+(c.nom||'');
@@ -2524,7 +2475,7 @@ async function goToConfirm(){
       if(hasActive){showToast('⚠️ Vous avez déjà une réservation active');return;}
     }catch(e){}
   }
-  const svc=S.service,total=svc.price,deposit=Math.round(total*0.30),dur=S.duration;
+  const svc=S.service,total=svc.price,deposit=Math.round(total*TAUX_ACOMPTE),dur=S.duration;
   const d=S.date;
   const dateStr=`${DAYS_F[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
   document.getElementById('cf-service').textContent=svc.name+(S.size?` · Taille ${S.size}`:'');
@@ -2641,7 +2592,7 @@ async function renderCustomSlots(){
       'date_rdv=eq.'+dateStr.split('/').reverse().join('-'),
       'select=heure_rdv,duree_minutes');
     const takenSlots=rawSlots2.map(r=>({heure:r.heure_rdv?r.heure_rdv.substring(0,5):'',dureeMin:r.duree_minutes||60}));
-    const slots=buildSlots(S.customDate,60,takenSlots);
+    const slots=buildSlots(S.customDate,S.duration||60,takenSlots);
     grid.innerHTML='';
     slots.forEach(s=>{
       const btn=document.createElement('button');
@@ -2848,7 +2799,7 @@ async function saveAppt(a){
       duree:fmtDur(a.dur||60),
       montant_paye:a.paidAmt+'€',
       prix_total:a.total+'€',
-      salon_tel:'07 53 41 61 15'
+      salon_tel:getSalonTel()
     });
   }
   return result[0];
@@ -3125,11 +3076,13 @@ function initDeepLinks(){
   };
   const match=SLUGS[hash];
   if(!match)return;
-  const cat=SVCS[match.cat];
-  if(!cat)return;
-  const svc=cat.items.find(s=>s.name===match.name);
-  if(!svc)return;
-  requestAnimationFrame(()=>pickSvc(svc));
+  const _presta=getPrestations().filter(p=>p.actif!==false).find(p=>p.nom===match.name);
+  if(!_presta){
+    showToast('Prestation introuvable — elle a peut-être été renommée');
+    requestAnimationFrame(()=>go('s-women-cats'));
+    return;
+  }
+  requestAnimationFrame(()=>pickSvc({name:_presta.nom,icon:_presta.icon||'✂️',img:_presta.img||null,price:_presta.prix,duration:_presta.duree,hasSize:_presta.prixType==='apartir'}));
 }
 
 function deplacerRDVBtn(btn){
@@ -3253,7 +3206,7 @@ Voulez-vous confirmer l'annulation ?`;
         duree:'',
         montant_paye:'Annulé',
         prix_total:estTotal?'Remboursement '+remboursement+'€ (70%)':'Acompte non remboursé',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     showToast('RDV annulé.');
@@ -3361,18 +3314,19 @@ async function repondredemande(id,statut){
   const prixEl=document.getElementById('prix-'+id);
   const dureeEl=document.getElementById('duree-'+id);
   const prix=prixEl?prixEl.value:'';
-  const duree=dureeEl?dureeEl.value:'120';
+  const duree=dureeEl?dureeEl.value:'';
   if(statut==='acceptée'&&!prix){showToast('⚠️ Entrez un prix');return;}
+  if(statut==='acceptée'&&(!duree||isNaN(parseInt(duree))||parseInt(duree)<=0)){showToast('⚠️ Durée manquante — vérifiez avant de valider');return;}
   await sbUpdate('demandes_sur_mesure','id=eq.'+id,{
     statut,
     prix_fixe:prix?parseFloat(prix):null,
-    duree_minutes:parseInt(duree)||120
+    duree_minutes:parseInt(duree)||0
   });
   // Email au client si acceptée
   if(statut==='acceptée'){
     const dem=await sbSelect('demandes_sur_mesure','id=eq.'+id,'select=client_email,client_nom,description,creneau_souhaite,prix_fixe,duree_minutes');
     if(dem&&dem[0]&&dem[0].client_email){
-      const dureeH=Math.floor((parseInt(duree)||120)/60);
+      const dureeH=Math.floor(parseInt(duree)/60);
       sendEmail(EJS_TEMPLATE_CONFIRM,{
         to_email:dem[0].client_email,
         to_name:dem[0].client_nom||'',
@@ -3382,7 +3336,7 @@ async function repondredemande(id,statut){
         duree:dureeH+'h',
         montant_paye:'0€ (acompte non requis)',
         prix_total:(prix||'0')+'€',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
   }
@@ -3407,7 +3361,7 @@ async function applyPromo(){
     const pct=promoData[0].reduction;
     const origTotal=S.appt.total;
     const newTotal=Math.round(origTotal*(1-pct/100));
-    const newDeposit=Math.round(newTotal*0.30);
+    const newDeposit=Math.round(newTotal*TAUX_ACOMPTE);
     S.appt.total=newTotal;S.appt.deposit=newDeposit;S.appt.promo=code;
     document.getElementById('cf-total').textContent=newTotal+'€ (-'+pct+'%)';
     document.getElementById('cf-deposit').textContent=newDeposit+'€';
@@ -3701,7 +3655,7 @@ async function submitClientForm(){
       heure:'',duree:'',
       montant_paye:'Votre code PIN : '+pin,
       prix_total:'Conservez ce PIN pour accéder à votre espace client',
-      salon_tel:'07 53 41 61 15'
+      salon_tel:getSalonTel()
     });
     showToast('✅ Compte créé !');
   }
@@ -3734,7 +3688,7 @@ async function goToConfirmFromForm(){
   // Calculer prix
   const svcPrice=S.service&&S.service.price?S.service.price:0;
   const base=a.total||svcPrice||0;
-  const dep=Math.round(parseFloat(base)*0.3*100)/100;
+  const dep=Math.round(parseFloat(base)*TAUX_ACOMPTE*100)/100;
   const tot=parseFloat(base)||0;
   S.appt={...S.appt,deposit:dep,total:tot};
   // Remplir l'écran récap
@@ -3779,6 +3733,7 @@ async function reserverSansPayment(){
     }catch(e){}
   }
 
+  if(!a.dur||a.dur<=0){showToast('⚠️ Durée de la prestation introuvable — réservation annulée');return;}
   showToast('Réservation en cours...');
   try{
     const d=new Date(a.dt);
@@ -3793,7 +3748,7 @@ async function reserverSansPayment(){
       client_email:a.email||'',
       service:a.service+(a.promo?' ['+a.promo+']':''),
       taille:a.size||'',
-      duree_minutes:a.dur||60,
+      duree_minutes:a.dur,
       date_rdv:dateISO,
       heure_rdv:heureISO,
       prix_total:parseFloat(a.total)||0,
@@ -3802,7 +3757,8 @@ async function reserverSansPayment(){
       type_paiement:'sur place',
       paypal_email:'',
       statut:'en attente de validation',
-      notes_admin:'Expire le: '+expireAt
+      notes_admin:'Expire le: '+expireAt,
+      praticien_id:getPraticienForService(a.service)||null
     });
 
     // Email de confirmation au client
@@ -3816,7 +3772,7 @@ async function reserverSansPayment(){
         duree:fmtDur(a.dur||60),
         montant_paye:'0€ (paiement sur place)',
         prix_total:'Montant total à régler sur place: '+(a.total||0)+'€',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
 
@@ -3902,7 +3858,7 @@ async function marquerTermine(id,clientEmail,clientNom,reservationId){
       duree:'',
       montant_paye:'',
       prix_total:'Laissez un avis sur le Salon T.Y',
-      salon_tel:'07 53 41 61 15'
+      salon_tel:getSalonTel()
     });
   }
   setTimeout(renderAdmin,800);
@@ -4730,7 +4686,7 @@ async function creerCarte(){
   const code='GIFT-'+Math.random().toString(36).substr(2,8).toUpperCase();
   await sbInsert('cartes_cadeau',{code,montant,solde:montant,beneficiaire_nom:benef,beneficiaire_email:email,utilisee:false});
   if(email){
-    sendEmail(EJS_TEMPLATE_CONFIRM,{to_email:email,to_name:benef,service:'Carte cadeau Salon T.Y',date:code,heure:'',duree:'Valable 1 an',montant_paye:montant+'€',prix_total:montant+'€',salon_tel:'07 53 41 61 15'});
+    sendEmail(EJS_TEMPLATE_CONFIRM,{to_email:email,to_name:benef,service:'Carte cadeau Salon T.Y',date:code,heure:'',duree:'Valable 1 an',montant_paye:montant+'€',prix_total:montant+'€',salon_tel:getSalonTel()});
   }
   showToast('✅ Carte cadeau créée : '+code);
   loadCartes();
@@ -4859,6 +4815,11 @@ const LS_HORAIRES='sty_horaires_v2';
 const LS_CRENEAUX='sty_creneaux';
 const LS_MSG_CONFIRM='sty_msg_confirm';
 const LS_SALON_INFO='sty_salon_info';
+
+function getSalonTel(){
+  try{const s=JSON.parse(localStorage.getItem(LS_SALON_INFO)||'{}');return s.tel||'07 53 41 61 15';}
+  catch(e){return '07 53 41 61 15';}
+}
 
 // ── Informations salon ────────────────────────────────────────────────────────
 function loadParamsSalon(){
@@ -5507,7 +5468,7 @@ async function confirmerTermine(){
         date:'Laissez-nous votre avis',
         heure:'',duree:'',montant_paye:'',
         prix_total:'Nous serions ravis d\'avoir votre retour',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     showToast('✅ RDV marqué terminé — '+_modePaiementSelectionne);
@@ -5539,7 +5500,7 @@ async function changerStatutRdv(newStatut){
         heure:r.heure_rdv?r.heure_rdv.substring(0,5):'—',
         duree:fmtDur(r.duree_minutes||60),
         montant_paye:(r.montant_paye||0)+'€',prix_total:(r.prix_total||0)+'€',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     if(newStatut==='no-show'&&r&&r.client_email)incrementNoShow(r.id,r.client_email);
@@ -5549,7 +5510,7 @@ async function changerStatutRdv(newStatut){
 }
 
 async function saveRdvDetail(){
-  if(!_currentRdvId)return;
+  if(!_currentRdvId){showToast('⚠️ Aucun RDV sélectionné');return;}
   const service=document.getElementById('rdv-edit-service').value.trim();
   const date=document.getElementById('rdv-edit-date').value;
   const heure=document.getElementById('rdv-edit-heure').value;
@@ -5568,7 +5529,7 @@ async function saveRdvDetail(){
         to_email:rdvs[0].client_email,to_name:rdvs[0].client_nom||'',service,
         date:new Date(date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}),
         heure,duree:fmtDur(duree),montant_paye:'Modification de votre réservation',
-        prix_total:prix+'€',salon_tel:'07 53 41 61 15'
+        prix_total:prix+'€',salon_tel:getSalonTel()
       });
     }
     showToast('✅ RDV mis à jour');
@@ -5588,7 +5549,7 @@ async function deleteRdv(){
         heure:r.heure_rdv?r.heure_rdv.substring(0,5):'',duree:'',
         montant_paye:'RDV annulé par le salon',
         prix_total:'Nous vous contacterons pour reprogrammer',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     await sbDelete('reservations','id=eq.'+_currentRdvId);
@@ -5630,7 +5591,7 @@ async function refuserRdvAdmin(){
         duree:fmtDur(d.duree_minutes||60),
         montant_paye:(d.montant_paye||0)+'€',
         prix_total:(d.prix_total||0)+'€',
-        salon_tel:'07 53 41 61 15',
+        salon_tel:getSalonTel(),
         contre_proposition:contrePropStr||'Aucune contre-proposition',
         espace_client_url:'https://salon-ty.netlify.app#espace-client'
       });
@@ -5664,7 +5625,7 @@ async function validerRDV(id,decision){
         duree:fmtDur(d.duree_minutes||60),
         montant_paye:(d.montant_paye||0)+'€',
         prix_total:(d.prix_total||0)+'€',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     if(decision==='confirmer'&&rdv&&rdv[0]&&rdv[0].client_email){
@@ -5696,6 +5657,7 @@ async function adminCreateRDV(){
   const[y,m,d]=date.split('-');
   const dateStr=d+'/'+m+'/'+y;
 
+  if(!parseInt(duree)||parseInt(duree)<=0){showToast('⚠️ Durée invalide — vérifiez le formulaire');return;}
   showToast('Enregistrement...');
   try{
     const[y2,m2,d2]=date.split('-');
@@ -5707,7 +5669,7 @@ async function adminCreateRDV(){
       client_email:email||'',
       service:svcName+(notes?' — '+notes:''),
       taille:'',
-      duree_minutes:parseInt(duree)||60,
+      duree_minutes:parseInt(duree),
       date_rdv:dateISO3,
       heure_rdv:heure+':00',
       prix_total:prix,
@@ -5715,7 +5677,8 @@ async function adminCreateRDV(){
       montant_paye:0,
       type_paiement:'total',
       paypal_email:'admin',
-      statut:'confirmé'
+      statut:'confirmé',
+      praticien_id:getPraticienForService(svcName)||null
     });
     // Email de confirmation au client si email fourni
     if(email){
@@ -5730,7 +5693,7 @@ async function adminCreateRDV(){
         duree:fmtDur(parseInt(duree)||60),
         montant_paye:'0€ (paiement sur place)',
         prix_total:'Montant total: '+prix+'€ — à régler sur place',
-        salon_tel:'07 53 41 61 15'
+        salon_tel:getSalonTel()
       });
     }
     showToast('✅ RDV enregistré !'+(email?' Email envoyé.':''));
@@ -5822,7 +5785,7 @@ async function checkActiveBooking(email){
 
 const CHAT_FUNCTION_URL='/.netlify/functions/chat';
 const CHAT_MAX_EXCHANGES=15;
-const CHAT_PHONE='07 53 41 61 15';
+const CHAT_PHONE=getSalonTel();
 
 const CHAT_CONFLICT_KEYWORDS=[
   'réclamation','remboursement','arnaque','scandale','honte',
@@ -5915,14 +5878,16 @@ function chatShowTarifs(){
   // Construire la liste des tarifs depuis les prestations de l'app
   let html='Voici nos tarifs principaux 💛<br>';
   try{
-    Object.values(SVCS).forEach(cat=>{
-      html+='<br><strong>'+cat.label+'</strong><br>';
-      cat.items.slice(0,4).forEach(it=>{
-        html+='• '+it.name+' — <strong>'+it.price+'€</strong> ('+it.duration+' min)<br>';
+    const _actives=getPrestations().filter(p=>p.actif!==false);
+    const _groupes={};
+    _actives.forEach(p=>{const l=p.souscat||p.cat||'Autres';if(!_groupes[l])_groupes[l]=[];_groupes[l].push(p);});
+    Object.entries(_groupes).forEach(([label,items])=>{
+      html+='<br><strong>'+label+'</strong><br>';
+      items.slice(0,4).forEach(it=>{
+        html+='• '+it.nom+' — <strong>'+it.prix+'€</strong> ('+it.duree+' min)<br>';
       });
     });
   }catch(e){}
-  html+='<br>🧒 Coupe enfant — <strong>10€</strong> (30 min)';
   chatAddBubble('bot',html);
   chatSetChoices([
     {label:'📅 Prendre rendez-vous',value:'Je voudrais prendre rendez-vous'},
@@ -5968,7 +5933,13 @@ function chatGoReserve(cat){
     } else if(c.includes('enfant')||c.includes('child')){
       // Coupe enfant directement
       if(typeof pickSvc==='function'){
-        pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null});
+        const _toutes=getPrestations().filter(p=>p.actif!==false&&(p.cat==='enfant'||p.svcsKey==='enfant'));
+        const _enfant=_toutes[0];
+        if(_enfant){
+          pickSvc({name:_enfant.nom,icon:_enfant.icon||'✂️',price:_enfant.prix,duration:_enfant.duree,hasSize:_enfant.prixType==='apartir',img:_enfant.img||null});
+        }else{
+          pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null});
+        }
       } else go('s-women-cats');
     } else {
       // Femme par défaut
@@ -6154,9 +6125,12 @@ function chatBuildPrompt(){
   const salonLoc=(document.getElementById('home-loc')?.textContent||'Linas, 91310').trim();
   let prestations='';
   try{
-    Object.values(SVCS).forEach(cat=>{
-      prestations+='\n'+cat.label+' :\n';
-      cat.items.forEach(it=>{prestations+='  - '+it.name+' : '+it.price+'€, '+it.duration+' min\n';});
+    const _actives=getPrestations().filter(p=>p.actif!==false);
+    const _groupes={};
+    _actives.forEach(p=>{const l=p.souscat||p.cat||'Autres';if(!_groupes[l])_groupes[l]=[];_groupes[l].push(p);});
+    Object.entries(_groupes).forEach(([label,items])=>{
+      prestations+='\n'+label+' :\n';
+      items.forEach(it=>{prestations+='  - '+it.nom+' : '+it.prix+'€, '+it.duree+' min\n';});
     });
   }catch(e){}
   const ouvert=(document.getElementById('home-ouvert-block')?.textContent||'').trim();
