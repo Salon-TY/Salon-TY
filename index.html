@@ -2158,6 +2158,9 @@ function applySalonInfo(){
     const info=JSON.parse(localStorage.getItem(LS_SALON_INFO)||'{}');
     if(info.tagline){const el=document.querySelector('.home-tagline');if(el)el.textContent=info.tagline;}
     if(info.subtitle){const el=document.querySelector('.home-sub');if(el)el.textContent=info.subtitle.toUpperCase();}
+    const _tel=getSalonTel();
+    const _telLink=document.querySelector('#s-home a[href^="tel:"]');
+    if(_telLink){_telLink.href='tel:'+_tel.replace(/\s/g,'');const _sp=_telLink.querySelector('span');if(_sp)_sp.textContent=_tel;}
   }catch(e){}
   // ─── Passe C2 — Bloc "Ouvert / Fermé aujourd'hui" ─────────────────────────
   try{
@@ -5926,7 +5929,7 @@ function chatGoReserve(cat){
   S.history=[];
   chatClose();
   const c=(cat||'').toLowerCase();
-  requestAnimationFrame(()=>{
+  setTimeout(()=>{
     if(c.includes('homme')||c.includes('men')){
       // Prestations homme
       if(typeof loadSvcs==='function'){loadSvcs('men');go('s-services');}
@@ -5946,7 +5949,7 @@ function chatGoReserve(cat){
       // Femme par défaut
       go('s-women-cats');
     }
-  });
+  }, 360);
 }
 
 // ── Envoi d'un message ──────────────────────────────────────────────────────
@@ -6084,7 +6087,7 @@ function chatShowLimite(){
   card.innerHTML='<p>J\'ai répondu à beaucoup de questions 😊 Pour continuer :</p>'
     +'<div class="chat-limit-actions">'
     +'<button class="chat-limit-btn primary" onclick="chatClose();requestAnimationFrame(()=>go(\'s-women-cats\'))">📅 Réserver</button>'
-    +'<button class="chat-limit-btn secondary" onclick="window.location.href=\'tel:0753416115\'">📞 Appeler</button>'
+    +'<button class="chat-limit-btn secondary" onclick="window.location.href=\'tel:\'+getSalonTel().replace(/\\s/g,\'\')">📞 Appeler</button>'
     +'</div>';
   msgs.insertBefore(card,document.getElementById('chat-typing'));
   chatScrollBottom();
