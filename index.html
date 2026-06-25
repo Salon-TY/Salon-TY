@@ -34,7 +34,7 @@
 html,body{height:100%;font-family:'Jost',sans-serif;background:var(--dark);-webkit-font-smoothing:antialiased;}
 button{cursor:pointer;border:none;background:none;font-family:inherit;}
 input,textarea{font-family:inherit;}
-#app{width:100%;max-width:430px;height:100vh;background:#fff;position:fixed;top:0;left:50%;transform:translateX(-50%);overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.5);overscroll-behavior:none;}
+#app{width:100%;max-width:430px;height:100vh;height:-webkit-fill-available;height:100dvh;background:#fff;position:fixed;top:0;left:50%;transform:translateX(-50%);overflow:hidden;box-shadow:0 0 80px rgba(0,0,0,0.5);overscroll-behavior:none;}
 .screen{position:absolute;inset:0;background:#fff;overflow-x:hidden;overflow-y:hidden;transform:translateX(100%);transition:transform 0.32s cubic-bezier(0.4,0,0.2,1);}
 .screen:not(#s-admin){overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;}
 .screen.active{transform:translateX(0);}
@@ -1623,7 +1623,7 @@ function go(id){
   const nxt=document.getElementById(id);
   if(!nxt||!cur||cur===nxt)return;
   cur.classList.add('prev');cur.classList.remove('active');
-  nxt.classList.add('active');nxt.scrollTop=0;
+  nxt.classList.remove('prev');nxt.classList.add('active');nxt.scrollTop=0;
   S.history.push(cur.id);
   // Dark toggle : caché dans l'admin, visible partout ailleurs
   const adminScreens=['s-admin','s-admin-login','s-admin-client-fiche','s-admin-rdv-detail'];
@@ -5923,6 +5923,7 @@ function chatInputResize(el){
 
 // ── Navigation vers la réservation selon la catégorie ───────────────────────
 function chatGoReserve(cat){
+  S.history=[];
   chatClose();
   const c=(cat||'').toLowerCase();
   requestAnimationFrame(()=>{
