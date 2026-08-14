@@ -475,6 +475,7 @@ button{touch-action:manipulation;}
   #chat-window.open{height:-webkit-fill-available;}
 }
 </style>
+<link rel="stylesheet" href="studio-ty.css?v=7"/>
 </head>
 <body>
 <div id="app">
@@ -497,6 +498,9 @@ button{touch-action:manipulation;}
 </div>
 
 <div class="screen active" id="s-home">
+  <button class="home-menu-btn" type="button" aria-label="Ouvrir le menu" aria-controls="home-more" aria-expanded="false" onclick="const panel=document.getElementById('home-more');const open=panel.classList.toggle('open');this.setAttribute('aria-expanded',open?'true':'false')">
+    <span></span><span></span><span></span>
+  </button>
   <div class="home-top">
     <p class="home-loc">Linas · 91310</p>
     <img class="home-logo" src="images/img_02.jpg" alt="Salon T.Y"/>
@@ -538,15 +542,43 @@ button{touch-action:manipulation;}
         <div class="home-card-body"><span class="home-card-name">Femme</span><span id="home-prix-femme" class="home-card-price">à partir de 25€</span></div>
       </button>
       <button id="home-btn-homme" class="home-card" onclick="loadSvcs('men');go('s-services')">
-        <img class="home-card-img" src="images/img_04.jpg" alt="Homme"/>
+        <img class="home-card-img" src="images/img_05.jpg" alt="Homme"/>
         <div class="home-card-body"><span class="home-card-name">Homme</span><span id="home-prix-homme" class="home-card-price">à partir de 5€</span></div>
       </button>
     </div>
     <button class="home-enfant" id="home-btn-enfant" onclick="pickSvc({name:'Coupe enfant',icon:'✂️',price:10,duration:30,hasSize:false,img:null})">
-      <img src="images/img_05.jpg" alt="Enfant"/>
+      <img src="images/img_04.jpg" alt="Enfant"/>
       <div class="home-enfant-info"><span class="home-enfant-name">Enfant</span><span id="home-enfant-sub" class="home-enfant-sub">Coupe enfant</span></div>
       <span id="home-enfant-price" class="home-enfant-price">10€</span>
     </button>
+    <button class="home-primary-cta" type="button" onclick="go('s-women-cats')">
+      <span>Choisir une prestation</span>
+      <span aria-hidden="true">→</span>
+    </button>
+    <div class="home-utility" aria-label="Accès rapides">
+      <a href="https://www.instagram.com/salon.t.y?igsh=MTQzZTV5dXJubmRscw==" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.4" cy="6.6" r="1" fill="currentColor" stroke="none"/></svg>
+        <span>Instagram</span>
+      </a>
+      <a href="https://www.tiktok.com/@salon.ty?_r=1&amp;_t=ZN-95kiSJ5hi3K" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.6 6.7a4.8 4.8 0 0 1-3.8-4.3V2h-3.4v13.7a2.9 2.9 0 0 1-2.9 2.5 2.9 2.9 0 0 1 0-5.8c.3 0 .5 0 .8.1V9a6.3 6.3 0 0 0-.8-.1 6.3 6.3 0 1 0 6.3 6.4V9.1a8.2 8.2 0 0 0 4.8 1.5V7.1c-.3 0-.7-.2-1-.4z"/></svg>
+        <span>TikTok</span>
+      </a>
+      <a href="tel:0753416115">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 11.2 19 19.5 19.5 0 0 1 4.1 12 19.8 19.8 0 0 1 1 3.3 2 2 0 0 1 2-2.2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L7.1 8.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+        <span>Téléphone</span>
+      </a>
+      <button type="button" onclick="clientAccessBtn()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span>Mon compte</span>
+      </button>
+    </div>
+    <div class="home-more" id="home-more">
+      <button type="button" onclick="adminAccessBtn()">Espace administrateur</button>
+      <button type="button" onclick="shareApp()">Partager le salon</button>
+      <button type="button" onclick="go('s-avis')">Déposer un avis</button>
+      <button type="button" onclick="chatOpen()">Assistant Ty</button>
+    </div>
     <div style="display:flex;gap:8px;margin-top:14px">
       <button id="client-access" onclick="clientAccessBtn()" style="flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:12px;border:1px solid var(--border);background:#fff;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:inherit">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -658,7 +690,7 @@ button{touch-action:manipulation;}
     <div class="field-group"><label class="field-label">Email</label><input class="field-input" id="custom-email" type="email" placeholder="vous@email.com"/></div>
     <div class="field-group"><label class="field-label">Allergies / Notes (optionnel)</label><input class="field-input" id="custom-notes" type="text" placeholder="Ex: allergie au henné, cuir chevelu sensible..."/></div>
     <div class="field-group"><label class="field-label">Décrivez votre coiffure</label><textarea class="field-textarea" id="cust-desc" placeholder="Ex: tresses knotless mi-longues avec perles..."></textarea></div>
-    <div class="field-group"><label class="field-label">Photo de référence</label><label class="photo-upload"><span id="photo-lbl">📎 Ajouter une photo</span><input type="file" accept="image/*" onchange="photoUploaded(this)"/></label></div>
+    <div class="field-group"><label class="field-label">Photo de référence</label><label class="photo-upload"><span id="photo-lbl">Ajouter une photo</span><input type="file" accept="image/*" onchange="photoUploaded(this)"/></label></div>
     <div class="field-group">
       <label class="field-label">Créneau souhaité</label>
       <p style="font-size:11px;color:var(--muted);margin-bottom:8px">Proposition — sera confirmé après validation</p>
@@ -816,7 +848,7 @@ button{touch-action:manipulation;}
       <label for="cl-remember" style="font-size:11px;color:var(--muted)">Se souvenir sur cet appareil</label>
     </div>
     <button class="cta-btn" id="cl-pin-btn" onclick="clientPinStep()">Accéder à mon compte</button>
-    <button class="ghost-btn" onclick="document.getElementById('client-pin-form').style.display='none';document.getElementById('client-login-form').style.display='block'">← Changer d\'email</button>
+    <button class="ghost-btn" onclick="document.getElementById('client-pin-form').style.display='none';document.getElementById('client-login-form').style.display='block'">← Changer d'email</button>
   </div>
 </div>
 
@@ -873,18 +905,18 @@ button{touch-action:manipulation;}
     <div id="adm-sec-planning">
       <!-- Barre de recherche rapide -->
       <div style="display:flex;gap:8px;margin-bottom:12px">
-        <input class="field-input" id="planning-search" type="text" placeholder="🔍 Rechercher un client..." oninput="planningSearch()" style="margin:0;font-size:13px"/>
+        <input class="field-input" id="planning-search" type="text" placeholder="Rechercher un client..." oninput="planningSearch()" style="margin:0;font-size:13px"/>
       </div>
       <div id="planning-search-results" style="display:none;margin-bottom:12px"></div>
       <div class="admin-stats">
-        <div class="stat-card"><span class="stat-val" id="stat-rdv">0</span><span class="stat-lbl">RDV aujourd\'hui</span></div>
+        <div class="stat-card"><span class="stat-val" id="stat-rdv">0</span><span class="stat-lbl">RDV aujourd'hui</span></div>
         <div class="stat-card"><span class="stat-val" id="stat-rev">0€</span><span class="stat-lbl">Chiffre du jour</span></div>
         <div class="stat-card"><span class="stat-val" id="stat-mois">0€</span><span class="stat-lbl">CA du mois</span></div>
         <div class="stat-card"><span class="stat-val" id="stat-pointe" style="font-size:16px">—</span><span class="stat-lbl">Heure de pointe</span></div>
         <div class="stat-card full"><span class="stat-val" id="stat-topsvc" style="font-size:16px">—</span><span class="stat-lbl">Service le + demandé</span></div>
       </div>
       <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
-        <button onclick="showPlanningTab('rdv')" id="ptab-rdv" class="ptab active-ptab">Aujourd\'hui</button>
+        <button onclick="showPlanningTab('rdv')" id="ptab-rdv" class="ptab active-ptab">Aujourd'hui</button>
         <button onclick="showPlanningTab('cal')" id="ptab-cal" class="ptab">Semaine</button>
         <button onclick="showPlanningTab('histo')" id="ptab-histo" class="ptab">Historique</button>
         <button onclick="showPlanningTab('demandes')" id="ptab-demandes" class="ptab">Demandes</button>
@@ -1140,7 +1172,7 @@ button{touch-action:manipulation;}
           </div>
           <input type="hidden" id="presta-edit-id" value=""/>
           <div style="display:flex;gap:8px">
-            <button onclick="savePrestation()" class="cta-btn" style="flex:1;margin:0">💾 Sauvegarder</button>
+            <button onclick="savePrestation()" class="cta-btn" style="flex:1;margin:0">Sauvegarder</button>
             <button onclick="cancelPrestaForm()" style="padding:0 16px;background:#f0ebe5;color:var(--dark);border-radius:14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:inherit;flex-shrink:0">Annuler</button>
           </div>
         </div>
@@ -1157,14 +1189,14 @@ button{touch-action:manipulation;}
         <div class="field-group"><label class="field-label">Email admin</label><input class="field-input" id="param-email-admin" type="email" value="salonty91310@gmail.com"/></div>
         <div class="field-group"><label class="field-label">Instagram</label><input class="field-input" id="param-instagram" type="url" placeholder="https://instagram.com/salonty"/></div>
         <div class="field-group"><label class="field-label">TikTok</label><input class="field-input" id="param-tiktok" type="url" placeholder="https://tiktok.com/@salonty"/></div>
-        <button class="cta-btn" onclick="saveParamsSalon()" style="width:100%">💾 Sauvegarder</button>
+        <button class="cta-btn" onclick="saveParamsSalon()" style="width:100%">Sauvegarder</button>
       </div>
 
       <!-- ── HORAIRES ───────────────────────────────────────────────── -->
       <div id="paramtab-content-horaires" style="display:none">
         <p style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px">Jours et horaires d'ouverture</p>
         <div id="horaires-jours-list"></div>
-        <button class="cta-btn" onclick="saveHoraires()" style="width:100%;margin-top:8px">💾 Sauvegarder</button>
+        <button class="cta-btn" onclick="saveHoraires()" style="width:100%;margin-top:8px">Sauvegarder</button>
       </div>
 
       <!-- ── CONGÉS ─────────────────────────────────────────────────── -->
@@ -1196,7 +1228,7 @@ button{touch-action:manipulation;}
           </div>
         </div>
         <div class="form-note">Ces réglages définissent la grille de créneaux affichée aux clients lors de la réservation.</div>
-        <button class="cta-btn" onclick="saveCreneaux()" style="width:100%">💾 Sauvegarder</button>
+        <button class="cta-btn" onclick="saveCreneaux()" style="width:100%">Sauvegarder</button>
       </div>
 
       <!-- ── MESSAGE DE CONFIRMATION ───────────────────────────────── -->
@@ -1215,7 +1247,7 @@ Pour toute question, appelez-nous au {tel}.
 
 À très bientôt !</textarea>
         </div>
-        <button class="cta-btn" onclick="saveMessageConfirmation()" style="width:100%">💾 Sauvegarder</button>
+        <button class="cta-btn" onclick="saveMessageConfirmation()" style="width:100%">Sauvegarder</button>
       </div>
 
       <!-- ── ÉQUIPE / PRATICIENS ────────────────────────────────────── -->
@@ -1258,7 +1290,7 @@ Pour toute question, appelez-nous au {tel}.
             <label for="praticien-actif" style="font-size:12px;color:var(--dark);cursor:pointer">Membre actif (apparaît dans les plannings)</label>
           </div>
           <div style="display:flex;gap:8px">
-            <button onclick="savePraticien()" class="cta-btn" style="flex:1;margin:0">💾 Sauvegarder</button>
+            <button onclick="savePraticien()" class="cta-btn" style="flex:1;margin:0">Sauvegarder</button>
             <button onclick="cancelPraticienForm()" style="padding:0 16px;background:#f0ebe5;color:var(--dark);border-radius:14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:inherit;flex-shrink:0">Annuler</button>
           </div>
         </div>
@@ -1394,10 +1426,10 @@ Pour toute question, appelez-nous au {tel}.
     </div>
 
     <!-- Sauvegarder -->
-    <button class="cta-btn" onclick="saveRdvDetail()" style="width:100%;margin-bottom:10px">💾 Sauvegarder les modifications</button>
+    <button class="cta-btn" onclick="saveRdvDetail()" style="width:100%;margin-bottom:10px">Sauvegarder les modifications</button>
 
     <!-- Supprimer -->
-    <button onclick="deleteRdv()" style="width:100%;padding:13px;background:#faeced;color:#6B1A2A;border-radius:14px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:inherit">🗑️ Supprimer ce RDV</button>
+    <button onclick="deleteRdv()" style="width:100%;padding:13px;background:#faeced;color:#6B1A2A;border-radius:14px;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-family:inherit">Supprimer ce RDV</button>
   </div>
 </div>
 
@@ -1443,7 +1475,7 @@ Pour toute question, appelez-nous au {tel}.
         <p style="font-size:9px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">No-shows</p>
       </div>
       <div style="flex:1;display:flex;align-items:center">
-        <button id="fiche-blacklist-btn" onclick="blacklisterClient(_ficheClientId,document.getElementById('fiche-nom').textContent)" style="width:100%;padding:10px;background:#faeced;color:#6B1A2A;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:inherit">🚫 Blacklister</button>
+        <button id="fiche-blacklist-btn" onclick="blacklisterClient(_ficheClientId,document.getElementById('fiche-nom').textContent)" style="width:100%;padding:10px;background:#faeced;color:#6B1A2A;border-radius:10px;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-family:inherit">Blacklister</button>
       </div>
     </div>
     <p style="font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Historique des visites</p>
@@ -1498,7 +1530,6 @@ const TAUX_ACOMPTE=0.30; // Taux d'acompte PayPal — modifiez uniquement ici po
 // ─── HELPER SUPABASE REST API ─────────────────────────────────────────────
 const SBH={
   'apikey':SB_KEY,
-  'Authorization':'Bearer '+SB_KEY,
   'Content-Type':'application/json',
   'Prefer':'return=representation'
 };
@@ -2133,8 +2164,9 @@ function refreshHomeFromPrestations(){
     if(btnHomme) btnHomme.style.display=hommes.length?'':'none';
 
     // --- Visibilité bouton Enfant ---
+    // La coupe enfant par défaut reste disponible même sans entrée personnalisée.
     const btnEnfant=document.getElementById('home-btn-enfant');
-    if(btnEnfant) btnEnfant.style.display=enfants.length?'':'none';
+    if(btnEnfant) btnEnfant.style.display='';
 
     // --- Visibilité bouton Femme ---
     // Si toutes les sous-catégories femme sont vides, on masque aussi le bouton Femme
@@ -2157,7 +2189,7 @@ function applySalonInfo(){
   try{
     const info=JSON.parse(localStorage.getItem(LS_SALON_INFO)||'{}');
     if(info.tagline){const el=document.querySelector('.home-tagline');if(el)el.textContent=info.tagline;}
-    if(info.subtitle){const el=document.querySelector('.home-sub');if(el)el.textContent=info.subtitle.toUpperCase();}
+    if(info.subtitle){const el=document.querySelector('.home-sub');if(el)el.textContent=info.subtitle;}
     const _tel=getSalonTel();
     const _telLink=document.querySelector('#s-home a[href^="tel:"]');
     if(_telLink){_telLink.href='tel:'+_tel.replace(/\s/g,'');const _sp=_telLink.querySelector('span');if(_sp)_sp.textContent=_tel;}
@@ -2218,6 +2250,8 @@ async function submitAvis(reservationId,clientNom){
 }
 
 function loadSvcs(cat){
+  const serviceScreen=document.getElementById('s-services');
+  if(serviceScreen)serviceScreen.classList.toggle('services-men',cat==='men'||cat==='homme');
   // Source de vérité unique : localStorage
   const toutes=getPrestations();
   // cat peut être une svcsKey ('men','braids'...) OU une cat ('homme','femme','enfant')
@@ -5023,7 +5057,7 @@ const SOUSCAT_DEFAULTS={
 function getPrestations(){
   try{
     const saved=JSON.parse(localStorage.getItem(LS_PRESTATIONS)||'null');
-    if(saved&&Array.isArray(saved)&&saved.length)return saved;
+    if(Array.isArray(saved))return saved;
   }catch(e){}
   // Premier lancement : construire depuis SVCS avec des IDs stables et sauvegarder immédiatement
   const list=[];
@@ -5058,7 +5092,13 @@ function getPrestations(){
 }
 
 function savePrestations(list){
-  localStorage.setItem(LS_PRESTATIONS,JSON.stringify(list));
+  const json=JSON.stringify(list);
+  try{
+    localStorage.setItem(LS_PRESTATIONS,json);
+    return localStorage.getItem(LS_PRESTATIONS)===json;
+  }catch(e){
+    return false;
+  }
 }
 
 function loadPrestations(){
@@ -5100,7 +5140,7 @@ function renderPrestaList(list){
         +'<button data-id="'+p.id+'" onclick="movePrestation(this.dataset.id,-1)" style="background:#f0ebe5;border-radius:8px;padding:6px 8px;font-size:11px;font-family:inherit;color:var(--dark)" title="Monter">▲</button>'
         +'<button data-id="'+p.id+'" onclick="movePrestation(this.dataset.id,1)" style="background:#f0ebe5;border-radius:8px;padding:6px 8px;font-size:11px;font-family:inherit;color:var(--dark)" title="Descendre">▼</button>'
         +'<button data-id="'+p.id+'" onclick="openEditPrestation(this.dataset.id)" style="background:#f0ebe5;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--dark)">✏️</button>'
-        +'<button data-id="'+p.id+'" onclick="deletePrestation(this.dataset.id)" style="background:#faeced;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--burg)">🗑️</button>'
+        +'<button data-id="'+p.id+'" onclick="deletePrestation(this.dataset.id)" style="background:#faeced;border-radius:8px;padding:6px 10px;font-size:11px;font-family:inherit;color:var(--burg)">Supprimer</button>'
         +'</div>';
       container.appendChild(row);
     });
@@ -5201,12 +5241,12 @@ function savePrestation(){
   };
   const idx=list.findIndex(x=>x.id===p.id);
   if(idx>=0)list[idx]=p; else list.push(p);
-  savePrestations(list);
+  const ok=savePrestations(list);
   cancelPrestaForm();
   renderPrestaList(list);
   rebuildSvcsFromPrestations();
   refreshHomeFromPrestations();
-  showToast('✅ Prestation sauvegardée');
+  showToast(ok?'✅ Prestation sauvegardée':'⚠️ La sauvegarde n\'a peut-être pas fonctionné, vérifiez votre espace de stockage');
 }
 
 function deletePrestation(id){
@@ -5216,7 +5256,7 @@ function deletePrestation(id){
   renderPrestaList(list);
   rebuildSvcsFromPrestations();
   refreshHomeFromPrestations();
-  showToast('🗑️ Prestation supprimée');
+  showToast('Prestation supprimée');
 }
 
 function movePrestation(id,direction){
@@ -5801,7 +5841,7 @@ const CHAT_DEFAULT_CHOICES=[
   {label:'📞 Nous contacter',value:'__contact__'},
 ];
 
-let chatState={open:false,messages:[],waiting:false,rgpdShown:false,lastCategory:''};
+let chatState={open:false,messages:[],waiting:false,rgpdShown:false,lastCategory:'',welcomeShown:false};
 
 // ── Ouverture / fermeture ──────────────────────────────────────────────────
 function chatOpen(){
@@ -5815,7 +5855,7 @@ function chatOpen(){
     localStorage.setItem('ty_chat_rgpd','1');
     chatState.rgpdShown=true;
   }
-  if(chatState.messages.length===0)chatWelcome();
+  if(!chatState.welcomeShown)chatWelcome();
   chatPreheat();
   setTimeout(()=>{const i=document.getElementById('chat-input');if(i)i.focus();},400);
 }
@@ -5831,6 +5871,7 @@ function chatRestart(){
   chatState.messages=[];
   chatState.waiting=false;
   chatState.lastCategory='';
+  chatState.welcomeShown=false;
   const msgs=document.getElementById('chat-messages');
   Array.from(msgs.children).forEach(el=>{if(el.id!=='chat-typing')el.remove();});
   const inp=document.getElementById('chat-input');
@@ -5841,6 +5882,7 @@ function chatRestart(){
 
 // ── Message de bienvenue ────────────────────────────────────────────────────
 function chatWelcome(){
+  chatState.welcomeShown=true;
   chatAddBubble('bot',"Bonjour ! Je suis <strong>Ty</strong>, l'assistante du Salon T.Y 💛<br><br>Comment puis-je vous aider ?");
   chatSetChoices(CHAT_DEFAULT_CHOICES);
 }
